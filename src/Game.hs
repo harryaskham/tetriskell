@@ -13,7 +13,7 @@ import Control.Lens hiding (Empty)
 data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: [Piece]}
 
 -- |The possible moves at any given time.
-data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop
+data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop deriving (Show)
 
 makeLenses ''Game
 
@@ -76,7 +76,7 @@ guardGame game =
 move :: Move -> Game -> Maybe Game 
 move Left1 game = guardGame $ game & piece %~ (movePiece (-1) 0)
 move Right1 game = guardGame $ game & piece %~ (movePiece 1 0)
-move Down1 game = guardGame $ game & piece %~ (movePiece 0 1)
+move Down1 game = guardGame $ game & piece %~ (movePiece 0 (-1))
 move Drop game = undefined
 move RotateCW game = undefined
 move RotateCCW game = undefined

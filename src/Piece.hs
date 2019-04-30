@@ -36,7 +36,7 @@ rPiece = Piece [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordin
 -- |A generator for pieces appearing in the top-middle.
 -- TODO: Introduce randomness.
 allPiecesAtTop :: [Piece]
-allPiecesAtTop = map (movePiece 5 20) $ cycle [rPiece, lPiece, linePiece, sPiece, squarePiece, zPiece]
+allPiecesAtTop = map (movePiece 4 20) $ cycle [rPiece, lPiece, linePiece, sPiece, squarePiece, zPiece]
 
 -- |Moves a piece by the given distances.
 -- |No bounds checks - these are the game / grid's responsibility.
