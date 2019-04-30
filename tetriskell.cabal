@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9cf364260fc8cf8e66dd235c4c9ff841dccb7d58a7a1c144bd313c14a97f56db
+-- hash: 23f86b99ad24665b9ee267e19926ee7edf1f35b267bbb087afccd902726c046c
 
 name:           tetriskell
 version:        0.1.0.0
@@ -27,8 +27,8 @@ source-repository head
 library
   exposed-modules:
       Coordinate
+      Game
       Grid
-      Lib
       Piece
   other-modules:
       Paths_tetriskell

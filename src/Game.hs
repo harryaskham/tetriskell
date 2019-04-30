@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Lib where
+module Game where
 
 import Coordinate
 import Piece

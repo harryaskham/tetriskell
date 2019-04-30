@@ -1,6 +1,6 @@
 module Main where
 
-import Lib
+import Game
 import Control.Concurrent
 
 -- |Clear the terminal screen.
