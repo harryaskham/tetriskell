@@ -2,6 +2,7 @@ module Piece where
 
 import Coordinate
 
+-- |A generic representation of a Tetromino
 data Piece = Piece [Coordinate]
 
 -- |A line piece in the bottom-left.
@@ -37,6 +38,7 @@ rPiece = Piece [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordin
 allPiecesAtTop :: [Piece]
 allPiecesAtTop = map (movePiece 5 20) $ cycle [rPiece, lPiece, linePiece, sPiece, squarePiece, zPiece]
 
--- |Moves a piece by the given amounts.
+-- |Moves a piece by the given distances.
+-- |No bounds checks - these are the game / grid's responsibility.
 movePiece :: Int -> Int -> Piece -> Piece
 movePiece x y (Piece cs) = Piece $ map (moveCoordinate x y) cs
