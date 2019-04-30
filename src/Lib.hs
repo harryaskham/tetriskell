@@ -55,21 +55,32 @@ logicalGrid :: Game -> Maybe Grid
 logicalGrid game = withPiece (game ^. piece) (game ^. grid)
 
 -- |Fixes the current piece where it is and generates a new one.
-fixPiece :: Game -> Game
-fixPiece game = -- TODO: This is awful. Need a way to avoid the Maybe logic goign around.
-  case logicalGrid game of
-    (Just grid) -> Game {_grid=grid, _piece=newP, _pieceGen=ps}
+fixPiece :: Game -> Maybe Game
+fixPiece game = do
+  grid <- logicalGrid game
+  return Game {_grid=grid, _piece=newP, _pieceGen=ps}
   where
     (newP:ps) = game ^. pieceGen
 
 -- |Steps the game forward by dropping the current piece.
 -- |If it can't move, we fix the piece.
-step :: Game -> Game
-step game = if validateGame newGame then newGame else fixPiece game
+-- |TODO: Accept input / introduce AI or random moves
+step :: Game -> Maybe Game
+step game =
+  if validateGame newGame then
+    Just newGame
+  else
+    fixPiece game
   where
-    -- TODO: NEED TO AVOID HITTING BOTTOM OF THE SCREEN
     newPiece = movePiece 0 (-1) $ game ^. piece
     newGame = game & piece .~ newPiece
+
+-- | Step n times.
+stepN :: Int -> Game -> Maybe Game
+stepN 0 g = Just g
+stepN n g = do
+  g <- step g
+  stepN (n-1) g
 
 -- Nothing if the piece can't be placed, otherwise the game itself.
 validateGame :: Game -> Bool
@@ -119,7 +130,7 @@ movePiece x y (Piece cs) = Piece $ map (moveCoordinate x y) cs
 moveCoordinate :: Int -> Int -> Coordinate -> Coordinate
 moveCoordinate x y (Coordinate (x', y')) = Coordinate (x + x', y + y')
 
--- |Places a piece on the grid if possible.
+-- |Places a piece on the grid.
 withPiece :: Piece -> Grid -> Maybe Grid
 withPiece (Piece []) g = Just g
 withPiece (Piece (c:cs)) g = do
@@ -131,14 +142,22 @@ withCoordinate :: Coordinate -> Grid -> Maybe Grid
 withCoordinate (Coordinate (x, 0)) (Grid (g:gs)) = do
   (Row r) <- setX x g
   return $ Grid ((Row r):gs)
-withCoordinate (Coordinate (x, y)) (Grid (g:gs)) = do
-  (Grid gs) <- withCoordinate (Coordinate (x, y-1)) (Grid gs)
-  return $ Grid (g:gs)
+withCoordinate (Coordinate (x, y)) (Grid ((Row g):gs))
+  | x < 0 = Nothing
+  | y < 0 = Nothing
+  | x >= length g = Nothing
+  | y >= length gs = Nothing
+  | otherwise = do
+    (Grid gs) <- withCoordinate (Coordinate (x, y-1)) (Grid gs)
+    return $ Grid ((Row g):gs)
 
 -- |Sets the x value of the given row if possible.
 setX :: Int -> Row -> Maybe Row
 setX 0 (Row (Full:_)) = Nothing
 setX 0 (Row (Empty:xs)) = Just $ Row (Full:xs)
-setX n (Row (x:xs)) = do
-  (Row xs) <- setX (n-1) (Row xs)
-  return $ Row (x:xs)
+setX n (Row row@(x:xs))
+  | n < 0 = Nothing
+  | n >= length row = Nothing
+  | otherwise = do
+    (Row xs) <- setX (n-1) (Row xs)
+    return $ Row (x:xs)
