@@ -1,5 +1,8 @@
 module Lib
     ( emptyGrid
+    , defaultGrid
+    , withPiece
+    , linePiece
     ) where
 
 import Data.List
@@ -31,4 +34,17 @@ withPiece (p:ps) g = do
 
 -- |Fills a single coordinate on the grid if possible.
 withCoordinate :: Coordinate -> Grid -> Maybe Grid
-withCoordinate (x, y) g = undefined
+withCoordinate (x, 0) (g:gs) = do
+  g <- setX x g
+  return (g:gs)
+withCoordinate (x, y) (g:gs) = do
+  gs <- withCoordinate (0, y-1) gs
+  return (g:gs)
+
+-- |Sets the x value of the given row if possible.
+setX :: Int -> Row -> Maybe Row
+setX 0 (X:_) = Nothing
+setX 0 (O:xs) = Just (X:xs)
+setX n (x:xs) = do
+  xs <- setX (n-1) xs
+  return (x:xs)
