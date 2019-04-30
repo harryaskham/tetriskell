@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 3ae91e23c05b2889b94f4f97ec7368ce9f1a2c2fe98364bd55834a2d65f88e97
+-- hash: a940153cd3499c26f37a37cb36a2740e7cc0b381ff6c394268c22780f16cab5b
 
 name:           tetriskell
 version:        0.1.0.0
@@ -34,6 +34,7 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , lens
   default-language: Haskell2010
 
 executable tetriskell-exe
@@ -45,6 +46,7 @@ executable tetriskell-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , lens
     , tetriskell
   default-language: Haskell2010
 
@@ -58,5 +60,6 @@ test-suite tetriskell-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
+    , lens
     , tetriskell
   default-language: Haskell2010

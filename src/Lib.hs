@@ -1,6 +1,9 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Lib where
 
 import Data.List
+import Control.Lens hiding (Empty)
 
 data Square = Empty | Full
 data Row = Row [Square]
@@ -9,13 +12,19 @@ data Coordinate = Coordinate (Int, Int)
 data Piece = Piece [Coordinate]
 data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: [Piece]}
 
+makeLenses ''Game
+
 -- Strategy:
 -- Keep a fixed reference to the placed-grid - items that are fixed.
 -- Keep a piece separate to this
 -- The display grid is grid with piece, but grid remains fixed
+-- Piece rotation... how?
+-- Have a notion of a 'turn' where we attempt multiple things - input, step-down, etc and if stepdown fails fix it.
 
 instance Show Game where
-  show (Game {_grid=g, _piece=p}) = show $ withPiece p g
+  show game = show $ case logicalGrid game of
+                       (Just grid) -> grid
+                       Nothing -> emptyGrid 0 0
 
 instance Show Square where
   show Empty = "_"
@@ -39,7 +48,35 @@ defaultGrid = emptyGrid 10 24
 defaultGame :: Game
 defaultGame = Game {_grid=defaultGrid, _piece=p, _pieceGen=ps}
   where
-    (p:ps) = pieceGen
+    (p:ps) = allPiecesAtTop
+
+-- |Gets the logical grid with the current piece merged.
+logicalGrid :: Game -> Maybe Grid
+logicalGrid game = withPiece (game ^. piece) (game ^. grid)
+
+-- |Fixes the current piece where it is and generates a new one.
+fixPiece :: Game -> Game
+fixPiece game = -- TODO: This is awful. Need a way to avoid the Maybe logic goign around.
+  case logicalGrid game of
+    (Just grid) -> Game {_grid=grid, _piece=newP, _pieceGen=ps}
+  where
+    (newP:ps) = game ^. pieceGen
+
+-- |Steps the game forward by dropping the current piece.
+-- |If it can't move, we fix the piece.
+step :: Game -> Game
+step game = if validateGame newGame then newGame else fixPiece game
+  where
+    -- TODO: NEED TO AVOID HITTING BOTTOM OF THE SCREEN
+    newPiece = movePiece 0 (-1) $ game ^. piece
+    newGame = game & piece .~ newPiece
+
+-- Nothing if the piece can't be placed, otherwise the game itself.
+validateGame :: Game -> Bool
+validateGame game =
+  case logicalGrid game of
+    (Just _) -> True
+    Nothing -> False
 
 -- |A line piece in the bottom-left.
 linePiece :: Piece
@@ -71,8 +108,8 @@ rPiece = Piece [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordin
 
 -- |A generator for pieces appearing in the top-middle.
 -- TODO: Introduce randomness.
-pieceGen :: [Piece]
-pieceGen = map (movePiece 5 20) $ cycle [rPiece, lPiece, linePiece, sPiece, squarePiece, zPiece]
+allPiecesAtTop :: [Piece]
+allPiecesAtTop = map (movePiece 5 20) $ cycle [rPiece, lPiece, linePiece, sPiece, squarePiece, zPiece]
 
 -- |Moves a piece by the given amounts.
 movePiece :: Int -> Int -> Piece -> Piece
