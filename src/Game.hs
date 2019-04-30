@@ -9,16 +9,13 @@ import Grid
 import Data.List
 import Control.Lens hiding (Empty)
 
+-- |The representation of the game state.
 data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: [Piece]}
 
-makeLenses ''Game
+-- |The possible moves at any given time.
+data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop
 
--- TODO:
--- Piece rotation
--- User input
--- Line detection / clearing
--- Scoring
--- Correct failure (>20 lines)
+makeLenses ''Game
 
 instance Show Game where
   show game = show $ case logicalGrid game of
@@ -46,22 +43,20 @@ fixPiece game = do
 -- |Steps the game forward by dropping the current piece.
 -- |If it can't move, we fix the piece.
 -- |TODO: Accept input / introduce AI or random moves
-step :: Game -> Maybe Game
-step game =
+-- |TODO: Monads here surely - we want to apply every move to Game, and
+-- |we want to ensure that we never pass through a failure state. Maybe
+-- |monad with binding / folding.
+step :: [Move] -> Game -> Maybe Game
+step moves game = do
   if validateGame newGame then
     Just newGame
   else
-    fixPiece game
+    fixPiece movedGame
   where
-    newPiece = movePiece 0 (-1) $ game ^. piece
-    newGame = game & piece .~ newPiece
-
--- | Step n times.
-stepN :: Int -> Game -> Maybe Game
-stepN 0 g = Just g
-stepN n g = do
-  g <- step g
-  stepN (n-1) g
+    -- First move, then descend.
+    movedGame = applyMoves moves game
+    newPiece = movePiece 0 (-1) $ movedGame ^. piece
+    newGame = movedGame & piece .~ newPiece
 
 -- Nothing if the piece can't be placed, otherwise the game itself.
 validateGame :: Game -> Bool
@@ -69,3 +64,27 @@ validateGame game =
   case logicalGrid game of
     (Just _) -> True
     Nothing -> False
+
+-- |Only pass the game through if it's valid
+guardGame :: Game -> Maybe Game
+guardGame game = 
+  case logicalGrid game of
+    (Just _) -> Just game
+    Nothing -> Nothing
+
+-- |Apply the given move to the game if possible.
+move :: Move -> Game -> Maybe Game 
+move Left1 game = guardGame $ game & piece %~ (movePiece (-1) 0)
+move Right1 game = guardGame $ game & piece %~ (movePiece 1 0)
+move Down1 game = guardGame $ game & piece %~ (movePiece 0 1)
+move Drop game = undefined
+move RotateCW game = undefined
+move RotateCCW game = undefined
+
+-- |Apply the given moves to the game in order, ignoring failures.
+applyMoves :: [Move] -> Game -> Game
+applyMoves [] game = game
+applyMoves (m:ms) game =
+  case move m game of
+    Just newGame -> applyMoves ms newGame
+    Nothing -> applyMoves ms game

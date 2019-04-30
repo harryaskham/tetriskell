@@ -10,8 +10,8 @@ data Row = Row [Square]
 data Grid = Grid [Row]
 
 instance Show Square where
-  show Empty = "_"
-  show Full = "X"
+  show Empty = "·"
+  show Full = "■"
 
 instance Show Grid where
   show (Grid g) = (intercalate "\n") . (map show) . reverse $ g

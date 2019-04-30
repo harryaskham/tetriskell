@@ -3,6 +3,13 @@ module Main where
 import Game
 import Control.Concurrent
 
+-- TODO:
+-- User input
+-- Piece rotation
+-- Line detection / clearing
+-- Scoring
+-- Correct failure (>20 lines)
+
 -- |Clear the terminal screen.
 clear :: IO ()
 clear = putStr "\ESC[2J"
@@ -12,7 +19,7 @@ clear = putStr "\ESC[2J"
 runStep :: Game -> IO (Maybe Game)
 runStep game = do
   putStrLn $ show game
-  return $ step game
+  return $ step [Left1] game
 
 -- |Run an entire game.
 runGame :: Game -> IO ()
