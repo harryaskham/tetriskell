@@ -4,30 +4,31 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a940153cd3499c26f37a37cb36a2740e7cc0b381ff6c394268c22780f16cab5b
+-- hash: a55e892d5953351afd202fb1c1a3f02deef24842cf0d48bbb9a64cb7a6b4943e
 
 name:           tetriskell
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/tetriskell#readme>
-homepage:       https://github.com/githubuser/tetriskell#readme
-bug-reports:    https://github.com/githubuser/tetriskell/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2019 Author name here
+description:    Please see the README on GitHub at <https://github.com/harryaskham/tetriskell#readme>
+homepage:       https://github.com/harryaskham/tetriskell#readme
+bug-reports:    https://github.com/harryaskham/tetriskell/issues
+author:         Harry Askham
+maintainer:     harry@askham.ai
+copyright:      2019 Harry Askham
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
 extra-source-files:
     README.md
-    ChangeLog.md
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/tetriskell
+  location: https://github.com/harryaskham/tetriskell
 
 library
   exposed-modules:
+      Coordinate
       Lib
+      Piece
   other-modules:
       Paths_tetriskell
   hs-source-dirs:

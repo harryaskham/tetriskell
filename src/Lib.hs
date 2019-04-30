@@ -2,24 +2,25 @@
 
 module Lib where
 
+import Coordinate
+import Piece
+
 import Data.List
 import Control.Lens hiding (Empty)
 
 data Square = Empty | Full
 data Row = Row [Square]
 data Grid = Grid [Row]
-data Coordinate = Coordinate (Int, Int)
-data Piece = Piece [Coordinate]
 data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: [Piece]}
 
 makeLenses ''Game
 
--- Strategy:
--- Keep a fixed reference to the placed-grid - items that are fixed.
--- Keep a piece separate to this
--- The display grid is grid with piece, but grid remains fixed
--- Piece rotation... how?
--- Have a notion of a 'turn' where we attempt multiple things - input, step-down, etc and if stepdown fails fix it.
+-- TODO:
+-- Piece rotation
+-- User input
+-- Line detection / clearing
+-- Scoring
+-- Correct failure (>20 lines)
 
 instance Show Game where
   show game = show $ case logicalGrid game of
@@ -88,47 +89,6 @@ validateGame game =
   case logicalGrid game of
     (Just _) -> True
     Nothing -> False
-
--- |A line piece in the bottom-left.
-linePiece :: Piece
-linePiece = Piece [Coordinate (0, 0), Coordinate (0, 1), Coordinate (0, 2), Coordinate (0, 3)]
-
--- |A T piece in the bottom-left.
-tPiece :: Piece
-tPiece = Piece [Coordinate (0, 0), Coordinate (1, 0), Coordinate (2, 0), Coordinate (1, 1)]
-
--- |A square piece in the bottom-left.
-squarePiece :: Piece
-squarePiece = Piece [Coordinate (0, 0), Coordinate (1, 0), Coordinate (0, 1), Coordinate (1, 1)]
-
--- |An S piece in the bottom-left.
-sPiece :: Piece
-sPiece = Piece [Coordinate (0, 0), Coordinate (1, 0), Coordinate (1, 1), Coordinate (2, 1)]
-
--- |A Z piece in the bottom-left.
-zPiece :: Piece
-zPiece = Piece [Coordinate (0, 1), Coordinate (1, 1), Coordinate (1, 0), Coordinate (2, 0)]
-
--- |An L piece in the bottom-left.
-lPiece :: Piece
-lPiece = Piece [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordinate (1, 0)]
-
--- |An R piece in the bottom-left.
-rPiece :: Piece
-rPiece = Piece [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordinate (1, 2)]
-
--- |A generator for pieces appearing in the top-middle.
--- TODO: Introduce randomness.
-allPiecesAtTop :: [Piece]
-allPiecesAtTop = map (movePiece 5 20) $ cycle [rPiece, lPiece, linePiece, sPiece, squarePiece, zPiece]
-
--- |Moves a piece by the given amounts.
-movePiece :: Int -> Int -> Piece -> Piece
-movePiece x y (Piece cs) = Piece $ map (moveCoordinate x y) cs
-
--- |Moves a coordinate by the given amounts.
-moveCoordinate :: Int -> Int -> Coordinate -> Coordinate
-moveCoordinate x y (Coordinate (x', y')) = Coordinate (x + x', y + y')
 
 -- |Places a piece on the grid.
 withPiece :: Piece -> Grid -> Maybe Grid
