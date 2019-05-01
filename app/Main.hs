@@ -15,6 +15,8 @@ import System.IO.HiddenChar
 -- Correct failure (>20 lines)
 -- Speed linked to level
 -- Random piece generation
+-- Rotation correction, not blocking
+-- Rotation drift
 
 -- |Clear the terminal screen.
 clear :: IO ()
@@ -62,7 +64,7 @@ toMove :: Char -> Maybe Move
 toMove 'j' = Just Left1
 toMove 'l' = Just Right1
 toMove 'k' = Just Down1
-toMove 'i' = Just RotateCW
+toMove 'i' = Just RotateCCW
 toMove 'u' = Just RotateCW
 toMove ' ' = Just Drop
 toMove _ = Nothing

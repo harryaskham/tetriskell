@@ -63,18 +63,24 @@ normaliseToOrigin p = (movePiece (-leftMost) (-bottomMost) p, Coordinate (leftMo
     BoundingBox (Coordinate (leftMost, bottomMost), _) = boundingBox p
 
 -- |Undoes the given normalisation.
+-- |First pushes the piece to the origin then undoes it.
+-- |Means that the bounding box ends up in the same bottom-left.
 undoNormalisation :: Piece -> Coordinate -> Piece
-undoNormalisation p (Coordinate (x, y)) = movePiece x y p
+undoNormalisation p (Coordinate (x, y)) = movePiece (x - leftMost) (y - bottomMost) p
+  where
+    (BoundingBox (Coordinate (leftMost, bottomMost), _)) = boundingBox p
 
--- |Rotates a single coordinate clockwise about the origin.
-rotateCoordinateCw :: Coordinate -> Coordinate
-rotateCoordinateCw (Coordinate (x, y)) = Coordinate ((-y), x)
+-- |The direction of rotation.
+data RotationDirection = CW | CCW
 
 -- |Rotates a piece CW by rotating its bounding box.
 -- |Does no validation; will need to be fixed in the context of the game.
 -- |Only works about the origin, so need to translate / untranslate too.
-rotateCw :: Piece -> Piece
-rotateCw p = undoNormalisation rotatedPieceAtOrigin undoC
+rotate :: RotationDirection -> Piece -> Piece
+rotate rd p = undoNormalisation rotatedPieceAtOrigin undoC
   where
+    rotateCoordinate = case rd of
+                         CW -> rotateCoordinateCw
+                         CCW -> rotateCoordinateCcw
     ((Piece cs), undoC) = normaliseToOrigin p
-    rotatedPieceAtOrigin = (Piece $ map rotateCoordinateCw cs)
+    rotatedPieceAtOrigin = (Piece $ map rotateCoordinate cs)

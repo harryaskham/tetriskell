@@ -76,8 +76,8 @@ move Drop game =
   case move Down1 game of
     Just game -> move Drop game
     Nothing -> fixPiece game
-move RotateCW game = guardGame $ game & piece %~ rotateCw
-move RotateCCW game = undefined
+move RotateCW game = guardGame $ game & piece %~ rotate CW
+move RotateCCW game = guardGame $ game & piece %~ rotate CCW
 
 -- |Apply the given moves to the game in order, ignoring failures.
 applyMoves :: [Move] -> Game -> Game
