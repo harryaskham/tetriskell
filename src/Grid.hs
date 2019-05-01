@@ -32,6 +32,7 @@ defaultGrid :: Grid
 defaultGrid = emptyGrid 10 20
 
 -- |Places a piece on the grid.
+-- |Nothing if the piece doesn't fit.
 withPiece :: Piece -> Grid -> Maybe Grid
 withPiece (Piece []) g = Just g
 withPiece (Piece (c:cs)) g = do

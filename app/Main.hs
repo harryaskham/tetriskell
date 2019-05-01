@@ -9,12 +9,13 @@ import System.IO
 import System.IO.HiddenChar
 
 -- TODO:
--- Line detection / clearing on fixPiece
--- Scoring
 -- Correct failure (>20 lines)
--- Speed linked to level
+-- Scoring
+-- Speed linked to level & score
 -- Random piece generation
 -- Rotation correction, not blocking
+-- Ghost piece
+-- Curses or better frontend
 
 -- |Clear the terminal screen.
 clear :: IO ()

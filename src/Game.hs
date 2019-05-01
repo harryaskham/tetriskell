@@ -34,6 +34,7 @@ logicalGrid :: Game -> Maybe Grid
 logicalGrid game = withPiece (game ^. piece) (game ^. grid)
 
 -- |Fixes the current piece where it is and generates a new one.
+-- |Nothing if this piece kills the game.
 fixPiece :: Game -> Maybe Game
 fixPiece game = do
   grid <- logicalGrid game
