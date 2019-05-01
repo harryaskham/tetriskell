@@ -10,9 +10,7 @@ import System.IO.HiddenChar
 
 -- TODO:
 -- Piece rotation (define pieces in terms of a centrepoint and offsets from there)
--- Decouple speed of game descending with speed of flushing user input.
--- need a game-modification and a game-step loop as separate
--- Line detection / clearing
+-- Line detection / clearing on fixPiece
 -- Scoring
 -- Correct failure (>20 lines)
 -- Speed linked to level
