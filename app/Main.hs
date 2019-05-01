@@ -45,7 +45,7 @@ gameLoop gameMv = do
   case step game of
     Just game -> do
       putMVar gameMv game
-      threadDelay 1000000 -- TODO: Change to affect game speed; should be level of game.
+      threadDelay 500000 -- 0.5s between descending
       gameLoop gameMv
     Nothing -> return ()
 
@@ -62,8 +62,8 @@ toMove :: Char -> Maybe Move
 toMove 'j' = Just Left1
 toMove 'l' = Just Right1
 toMove 'k' = Just Down1
-toMove 'i' = Just RotateCCW
-toMove 'u' = Just RotateCW
+toMove 'i' = Just RotateCW
+toMove 'u' = Just RotateCCW
 toMove ' ' = Just Drop
 toMove _ = Nothing
 
