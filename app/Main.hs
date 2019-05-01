@@ -8,7 +8,7 @@ import Data.Maybe
 import System.IO
 
 -- TODO:
--- Piece rotation
+-- Piece rotation (define pieces in terms of a centrepoint and offsets from there)
 -- Decouple speed of game descending with speed of flushing user input.
 -- need a game-modification and a game-step loop as separate
 -- Line detection / clearing
