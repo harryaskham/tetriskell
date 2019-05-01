@@ -5,7 +5,7 @@ import Piece
 
 import Data.List
 
-data Square = Empty | Full
+data Square = Empty | Full deriving (Eq)
 data Row = Row [Square]
 data Grid = Grid [Row]
 
@@ -19,9 +19,12 @@ instance Show Grid where
 instance Show Row where
   show (Row r) = concat . (map show) $ r
 
+-- |Creates an empty row.
+emptyRow x = Row $ take x $ repeat Empty
+
 -- |Creates an empty playing grid of the given dimensions.
 emptyGrid :: Int -> Int -> Grid
-emptyGrid x y = let row = (Row $ take x $ repeat Empty) in (Grid $ take y $ repeat row)
+emptyGrid x y = let row = emptyRow x in (Grid $ take y $ repeat row)
 
 -- |The default playing field with a 4-line buffer.
 defaultGrid :: Grid
@@ -58,3 +61,13 @@ setX n (Row row@(x:xs))
   | otherwise = do
     (Row xs) <- setX (n-1) (Row xs)
     return $ Row (x:xs)
+
+-- |Remove and replace any full rows.
+flushGrid :: Grid -> Grid
+flushGrid (Grid ((Row r):rs)) =
+  if all (== Full) r then
+    Grid (rs ++ [emptyRow (length r)])
+  else
+    Grid ((Row r):rest)
+  where
+    (Grid rest) = flushGrid $ Grid rs

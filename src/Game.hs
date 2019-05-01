@@ -41,6 +41,10 @@ fixPiece game = do
   where
     (newP:ps) = game ^. pieceGen
 
+-- |Remove any completed rows.
+flushCompleted :: Game -> Game
+flushCompleted game = (game & grid) %~ flushGrid
+
 -- |Steps the game forward by dropping the current piece.
 -- |If it can't move, we fix the piece.
 step :: Game -> Maybe Game
