@@ -8,45 +8,44 @@ import Data.Maybe
 import System.IO
 
 -- TODO:
--- Better input handling. We probably need separate forkIOs for display and for input, which means the Game itself would be an MVar.
 -- Piece rotation
 -- Line detection / clearing
 -- Scoring
 -- Correct failure (>20 lines)
+-- Speed linked to level
 
 -- |Clear the terminal screen.
 clear :: IO ()
 clear = putStr "\ESC[2J"
 
--- |Run a single step of the game, printing as we go.
--- |Spin-locks if the game won't proceed.
-runStep :: [Move] -> Game -> IO (Maybe Game)
-runStep moves game = do
-  putStrLn $ show moves
-  putStrLn $ show game
-  return $ step moves game
-
--- |Run an entire game.
-runGame :: Game -> IO ()
-runGame game = do
-  hSetBuffering stdin NoBuffering
+-- |Print the given game to the screen.
+printGame :: MVar Game -> IO ()
+printGame gameMv = do
   clear
-  inputsMV <- newMVar []
-  forkIO $ addInputs inputsMV
-  threadDelay 100000
-  inputs <- takeMVar inputsMV
-  game <- runStep (catMaybes (map toMove inputs)) game
+  withMVar gameMv (putStrLn . show)
+  threadDelay 16666  -- 60fps
+  printGame gameMv
+
+-- |Run the game loop.
+runGame :: MVar Game -> MVar [Char] -> IO ()
+runGame gameMv inputsMv = do
+  game <- takeMVar gameMv
+  inputs <- tryTakeMVar inputsMv
+  game <- return $ step (catMaybes (map toMove $ fromMaybe [] inputs)) game
+  threadDelay 100000 -- TODO: Change to affect game speed; should be level of game.
   case game of
-    Just game -> runGame game
+    Just game -> do
+      putMVar gameMv game
+      runGame gameMv inputsMv
     Nothing -> putStrLn "Finished"
 
 -- |Build up a list of chars given by getChar.
-addInputs :: MVar [Char] -> IO ()
-addInputs inputsMV = do
+getInputs :: MVar [Char] -> IO ()
+getInputs inputsMv = do
+  hSetBuffering stdin NoBuffering
   c <- getChar
-  inputs <- takeMVar inputsMV
-  putMVar inputsMV (c:inputs)
-  addInputs inputsMV
+  modifyMVar_ inputsMv (\is -> do putStrLn (c:is); return (c:is))
+  getInputs inputsMv
 
 -- |Maps inputs to moves.
 toMove :: Char -> Maybe Move
@@ -56,4 +55,10 @@ toMove 'k' = Just Down1
 toMove _ = Nothing
 
 main :: IO ()
-main = runGame defaultGame
+main = do
+  hSetBuffering stdin NoBuffering
+  gameMv <- newMVar defaultGame
+  inputsMv <- newMVar []
+  forkIO $ do printGame gameMv
+  forkIO $ do runGame gameMv inputsMv
+  getInputs inputsMv
