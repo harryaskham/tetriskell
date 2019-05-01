@@ -9,10 +9,9 @@ import System.IO
 import System.IO.HiddenChar
 
 -- TODO:
--- Correct failure (>20 lines)
+-- Random piece generation
 -- Scoring
 -- Speed linked to level & score
--- Random piece generation
 -- Rotation correction, not blocking
 -- Ghost piece
 -- Curses or better frontend
