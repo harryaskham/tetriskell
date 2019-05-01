@@ -16,7 +16,6 @@ import System.IO.HiddenChar
 -- Speed linked to level
 -- Random piece generation
 -- Rotation correction, not blocking
--- Rotation drift
 
 -- |Clear the terminal screen.
 clear :: IO ()

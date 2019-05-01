@@ -76,6 +76,7 @@ data RotationDirection = CW | CCW
 -- |Rotates a piece CW by rotating its bounding box.
 -- |Does no validation; will need to be fixed in the context of the game.
 -- |Only works about the origin, so need to translate / untranslate too.
+-- |TODO: Line rotation is about the bottom-left.
 rotate :: RotationDirection -> Piece -> Piece
 rotate rd p = undoNormalisation rotatedPieceAtOrigin undoC
   where
