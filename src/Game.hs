@@ -42,10 +42,6 @@ fixPiece game = do
 
 -- |Steps the game forward by dropping the current piece.
 -- |If it can't move, we fix the piece.
--- |TODO: Accept input / introduce AI or random moves
--- |TODO: Monads here surely - we want to apply every move to Game, and
--- |we want to ensure that we never pass through a failure state. Maybe
--- |monad with binding / folding.
 step :: [Move] -> Game -> Maybe Game
 step moves game = do
   if validateGame newGame then
