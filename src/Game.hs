@@ -8,6 +8,7 @@ import Grid
 
 import Data.List
 import Control.Lens hiding (Empty)
+import Control.Monad.Loops
 
 -- |The representation of the game state.
 data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: [Piece]}
@@ -71,7 +72,7 @@ move :: Move -> Game -> Maybe Game
 move Left1 game = guardGame $ game & piece %~ (movePiece (-1) 0)
 move Right1 game = guardGame $ game & piece %~ (movePiece 1 0)
 move Down1 game = guardGame $ game & piece %~ (movePiece 0 (-1))
-move Drop game = undefined
+move Drop game = undefined -- TODO: implement in terms of whileJust and repeated drops
 move RotateCW game = undefined
 move RotateCCW game = undefined
 
