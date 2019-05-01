@@ -14,21 +14,22 @@ instance Show Square where
   show Full = "■"
 
 instance Show Grid where
-  show (Grid g) = (intercalate "\n") . (map show) . reverse $ g
+  show (Grid g) = intercalate "\n" . map show . drop 4 . reverse $ g
 
 instance Show Row where
   show (Row r) = concat . (map show) $ r
 
 -- |Creates an empty row.
+emptyRow :: Int -> Row
 emptyRow x = Row $ take x $ repeat Empty
 
 -- |Creates an empty playing grid of the given dimensions.
 emptyGrid :: Int -> Int -> Grid
-emptyGrid x y = let row = emptyRow x in (Grid $ take y $ repeat row)
+emptyGrid x y = Grid $ (take (y + 4) $ repeat (emptyRow x))
 
 -- |The default playing field with a 4-line buffer.
 defaultGrid :: Grid
-defaultGrid = emptyGrid 10 24
+defaultGrid = emptyGrid 10 20
 
 -- |Places a piece on the grid.
 withPiece :: Piece -> Grid -> Maybe Grid
@@ -64,9 +65,10 @@ setX n (Row row@(x:xs))
 
 -- |Remove and replace any full rows.
 flushGrid :: Grid -> Grid
+flushGrid (Grid []) = Grid []
 flushGrid (Grid ((Row r):rs)) =
   if all (== Full) r then
-    Grid (rs ++ [emptyRow (length r)])
+    Grid (rest ++ [emptyRow (length r)])
   else
     Grid ((Row r):rest)
   where

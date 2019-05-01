@@ -37,13 +37,13 @@ logicalGrid game = withPiece (game ^. piece) (game ^. grid)
 fixPiece :: Game -> Maybe Game
 fixPiece game = do
   grid <- logicalGrid game
-  return Game {_grid=grid, _piece=newP, _pieceGen=ps}
+  return $ flushCompleted Game {_grid=grid, _piece=newP, _pieceGen=ps}
   where
     (newP:ps) = game ^. pieceGen
 
 -- |Remove any completed rows.
 flushCompleted :: Game -> Game
-flushCompleted game = (game & grid) %~ flushGrid
+flushCompleted game = game & grid %~ flushGrid
 
 -- |Steps the game forward by dropping the current piece.
 -- |If it can't move, we fix the piece.
