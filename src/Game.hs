@@ -72,7 +72,10 @@ move :: Move -> Game -> Maybe Game
 move Left1 game = guardGame $ game & piece %~ (movePiece (-1) 0)
 move Right1 game = guardGame $ game & piece %~ (movePiece 1 0)
 move Down1 game = guardGame $ game & piece %~ (movePiece 0 (-1))
-move Drop game = undefined -- TODO: implement in terms of whileJust and repeated drops
+move Drop game =
+  case move Down1 game of
+    Just game -> move Drop game
+    Nothing -> fixPiece game
 move RotateCW game = undefined
 move RotateCCW game = undefined
 
