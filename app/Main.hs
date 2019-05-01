@@ -6,6 +6,7 @@ import Control.Concurrent
 import Control.Monad
 import Data.Maybe
 import System.IO
+import System.IO.HiddenChar
 
 -- TODO:
 -- Piece rotation (define pieces in terms of a centrepoint and offsets from there)
@@ -15,6 +16,7 @@ import System.IO
 -- Scoring
 -- Correct failure (>20 lines)
 -- Speed linked to level
+-- Random piece generation
 
 -- |Clear the terminal screen.
 clear :: IO ()
@@ -46,8 +48,8 @@ runGame gameMv inputsMv = do
 getInputs :: MVar [Char] -> IO ()
 getInputs inputsMv = do
   hSetBuffering stdin NoBuffering
-  c <- getChar
-  modifyMVar_ inputsMv (\is -> do putStrLn (c:is); return (c:is))
+  c <- getHiddenChar
+  modifyMVar_ inputsMv (\is -> return (c:is))
   getInputs inputsMv
 
 -- |Maps input to move.
