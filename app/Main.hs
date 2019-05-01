@@ -9,7 +9,6 @@ import System.IO
 import System.IO.HiddenChar
 
 -- TODO:
--- Piece rotation (define pieces in terms of a centrepoint and offsets from there)
 -- Line detection / clearing on fixPiece
 -- Scoring
 -- Correct failure (>20 lines)
