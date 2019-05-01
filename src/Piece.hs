@@ -3,7 +3,10 @@ module Piece where
 import Coordinate
 
 -- |A generic representation of a Tetromino
-data Piece = Piece [Coordinate]
+data Piece = Piece [Coordinate] deriving (Show)
+
+-- |A representation of a bounding box in (bottomLeft, topRight) form.
+data BoundingBox = BoundingBox (Coordinate, Coordinate) deriving (Show)
 
 -- |A line piece in the bottom-left.
 linePiece :: Piece
@@ -42,3 +45,36 @@ allPiecesAtTop = map (movePiece 4 20) $ cycle [rPiece, lPiece, linePiece, sPiece
 -- |No bounds checks - these are the game / grid's responsibility.
 movePiece :: Int -> Int -> Piece -> Piece
 movePiece x y (Piece cs) = Piece $ map (moveCoordinate x y) cs
+
+-- |Gets bounding box for the given piece represented as (bottom-left, top-right).
+boundingBox :: Piece -> BoundingBox
+boundingBox (Piece cs) = BoundingBox (Coordinate (leftMost, bottomMost), Coordinate (topMost, rightMost))
+  where
+    leftMost = minimum $ map (\(Coordinate c) -> fst c) cs
+    bottomMost = minimum $ map (\(Coordinate c) -> snd c) cs
+    topMost = maximum $ map (\(Coordinate c) -> fst c) cs
+    rightMost = maximum $ map (\(Coordinate c) -> snd c) cs
+
+-- |Move the piece to the origin and return the coordinate its bottom-left
+-- |bounding box should take.
+normaliseToOrigin :: Piece -> (Piece, Coordinate)
+normaliseToOrigin p = (movePiece (-leftMost) (-bottomMost) p, Coordinate (leftMost, bottomMost))
+  where
+    BoundingBox (Coordinate (leftMost, bottomMost), _) = boundingBox p
+
+-- |Undoes the given normalisation.
+undoNormalisation :: Piece -> Coordinate -> Piece
+undoNormalisation p (Coordinate (x, y)) = movePiece x y p
+
+-- |Rotates a single coordinate clockwise about the origin.
+rotateCoordinateCw :: Coordinate -> Coordinate
+rotateCoordinateCw (Coordinate (x, y)) = Coordinate ((-y), x)
+
+-- |Rotates a piece CW by rotating its bounding box.
+-- |Does no validation; will need to be fixed in the context of the game.
+-- |Only works about the origin, so need to translate / untranslate too.
+rotateCw :: Piece -> Piece
+rotateCw p = undoNormalisation rotatedPieceAtOrigin undoC
+  where
+    ((Piece cs), undoC) = normaliseToOrigin p
+    rotatedPieceAtOrigin = (Piece $ map rotateCoordinateCw cs)

@@ -53,7 +53,7 @@ step game = do
     newPiece = movePiece 0 (-1) $ game ^. piece
     newGame = game & piece .~ newPiece
 
--- Nothing if the piece can't be placed, otherwise the game itself.
+-- Is the state of the game valid?
 validateGame :: Game -> Bool
 validateGame game =
   case logicalGrid game of
@@ -76,7 +76,7 @@ move Drop game =
   case move Down1 game of
     Just game -> move Drop game
     Nothing -> fixPiece game
-move RotateCW game = undefined
+move RotateCW game = guardGame $ game & piece %~ rotateCw
 move RotateCCW game = undefined
 
 -- |Apply the given moves to the game in order, ignoring failures.

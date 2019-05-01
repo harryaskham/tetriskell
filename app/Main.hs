@@ -69,7 +69,7 @@ toMove _ = Nothing
 
 -- |Generates the moveset for the cached input.
 toMoves :: [Char] -> [Move]
-toMoves = catMaybes . (map toMove)
+toMoves = reverse . catMaybes . (map toMove)
 
 main :: IO ()
 main = do
