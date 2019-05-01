@@ -1,6 +1,6 @@
 # tetriskell
 
-Tetris implemented in order to better learn haskell.
+Tetris implemented in order to better learn Haskell.
 
 To run, simply: `stack run`.
 
