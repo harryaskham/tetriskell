@@ -42,17 +42,15 @@ fixPiece game = do
 
 -- |Steps the game forward by dropping the current piece.
 -- |If it can't move, we fix the piece.
-step :: [Move] -> Game -> Maybe Game
-step moves game = do
+step :: Game -> Maybe Game
+step game = do
   if validateGame newGame then
     Just newGame
   else
-    fixPiece movedGame
+    fixPiece game
   where
-    -- First move, then descend.
-    movedGame = applyMoves moves game
-    newPiece = movePiece 0 (-1) $ movedGame ^. piece
-    newGame = movedGame & piece .~ newPiece
+    newPiece = movePiece 0 (-1) $ game ^. piece
+    newGame = game & piece .~ newPiece
 
 -- Nothing if the piece can't be placed, otherwise the game itself.
 validateGame :: Game -> Bool

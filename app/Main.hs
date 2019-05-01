@@ -23,25 +23,32 @@ clear :: IO ()
 clear = putStr "\ESC[2J"
 
 -- |Print the given game to the screen.
-printGame :: MVar Game -> IO ()
-printGame gameMv = do
+printLoop :: MVar Game -> IO ()
+printLoop gameMv = do
   clear
   withMVar gameMv (putStrLn . show)
   threadDelay 16666  -- 60fps
-  printGame gameMv
+  printLoop gameMv
 
--- |Run the game loop.
-runGame :: MVar Game -> MVar [Char] -> IO ()
-runGame gameMv inputsMv = do
+-- |Run the move-application loop.
+moveLoop :: MVar Game -> MVar [Char] -> IO ()
+moveLoop gameMv inputsMv = do
+  inputs <- takeMVar inputsMv
   game <- takeMVar gameMv
-  inputs <- tryTakeMVar inputsMv
-  game <- return $ step (toMoves inputs) game
+  game <- return $ applyMoves (toMoves inputs) game
+  putMVar gameMv game
   putMVar inputsMv []
-  threadDelay 100000 -- TODO: Change to affect game speed; should be level of game.
-  case game of
+  moveLoop gameMv inputsMv
+  
+-- |Run the game loop.
+gameLoop :: MVar Game -> IO ()
+gameLoop gameMv = do
+  game <- takeMVar gameMv
+  case step game of
     Just game -> do
       putMVar gameMv game
-      runGame gameMv inputsMv
+      threadDelay 1000000 -- TODO: Change to affect game speed; should be level of game.
+      gameLoop gameMv
     Nothing -> return ()
 
 -- |Build up a list of chars given by getChar.
@@ -57,18 +64,21 @@ toMove :: Char -> Maybe Move
 toMove 'j' = Just Left1
 toMove 'l' = Just Right1
 toMove 'k' = Just Down1
+toMove 'i' = Just RotateCW
+toMove 'u' = Just RotateCW
+toMove ' ' = Just Drop
 toMove _ = Nothing
 
 -- |Generates the moveset for the cached input.
-toMoves :: Maybe [Char] -> [Move]
-toMoves (Just inputs) = catMaybes $ map toMove inputs
-toMoves Nothing = []
+toMoves :: [Char] -> [Move]
+toMoves = catMaybes . (map toMove)
 
 main :: IO ()
 main = do
   hSetBuffering stdin NoBuffering
   gameMv <- newMVar defaultGame
   inputsMv <- newMVar []
-  forkIO $ do printGame gameMv
-  forkIO $ do runGame gameMv inputsMv
+  forkIO $ do printLoop gameMv
+  forkIO $ do gameLoop gameMv
+  forkIO $ do moveLoop gameMv inputsMv
   getInputs inputsMv
