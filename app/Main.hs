@@ -62,8 +62,8 @@ toMove :: Char -> Maybe Move
 toMove 'j' = Just Left1
 toMove 'l' = Just Right1
 toMove 'k' = Just Down1
-toMove 'i' = Just RotateCW
-toMove 'u' = Just RotateCCW
+toMove 'i' = Just RotateCCW
+toMove 'u' = Just RotateCW
 toMove ' ' = Just Drop
 toMove _ = Nothing
 

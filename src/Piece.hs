@@ -48,12 +48,12 @@ movePiece x y (Piece cs) = Piece $ map (moveCoordinate x y) cs
 
 -- |Gets bounding box for the given piece represented as (bottom-left, top-right).
 boundingBox :: Piece -> BoundingBox
-boundingBox (Piece cs) = BoundingBox (Coordinate (leftMost, bottomMost), Coordinate (topMost, rightMost))
+boundingBox (Piece cs) = BoundingBox (Coordinate (leftMost, bottomMost), Coordinate (rightMost, topMost))
   where
     leftMost = minimum $ map (\(Coordinate c) -> fst c) cs
     bottomMost = minimum $ map (\(Coordinate c) -> snd c) cs
-    topMost = maximum $ map (\(Coordinate c) -> fst c) cs
     rightMost = maximum $ map (\(Coordinate c) -> snd c) cs
+    topMost = maximum $ map (\(Coordinate c) -> fst c) cs
 
 -- |Move the piece to the origin and return the coordinate its bottom-left
 -- |bounding box should take.
