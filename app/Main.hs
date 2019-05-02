@@ -15,7 +15,6 @@ import System.IO.HiddenChar
 -- Rotation correction, not blocking
 -- Ghost piece
 -- Curses or better frontend
--- Colored pieces (squares have colors)
 
 -- |Clear the terminal screen.
 clear :: IO ()
