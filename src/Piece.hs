@@ -2,7 +2,15 @@ module Piece where
 
 import Coordinate
 
-data Color = Red | DBlue | LBlue | Yellow | Green | Purple | Orange deriving (Eq)
+-- |Representation of piece color.
+data Color = Red 
+           | DBlue
+           | LBlue
+           | Yellow
+           | Green
+           | Purple
+           | Orange
+           deriving (Eq)
 
 instance Show Color where
   show Red = "\x1b[31m"
