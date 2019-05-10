@@ -9,11 +9,12 @@ import System.IO
 import System.IO.HiddenChar
 
 -- TODO:
+-- Piece preview
 -- Scoring
 -- Speed linked to level & score
 -- Rotation correction, not blocking
--- Ghost piece
 -- Curses or better frontend
+-- Better use of Maybe in Game.hs
 
 -- |Clear the terminal screen.
 clear :: IO ()
