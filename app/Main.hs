@@ -9,7 +9,6 @@ import System.IO
 import System.IO.HiddenChar
 
 -- TODO:
--- Random piece generation
 -- Scoring
 -- Speed linked to level & score
 -- Rotation correction, not blocking
