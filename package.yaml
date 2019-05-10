@@ -23,6 +23,7 @@ dependencies:
 - lens
 - hidden-char
 - monad-loops
+- random
 
 library:
   source-dirs: src

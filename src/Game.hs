@@ -9,9 +9,10 @@ import Grid
 import Data.List
 import Control.Lens hiding (Empty)
 import Control.Monad.Loops
+import System.Random
 
 -- |The representation of the game state.
-data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: [Piece]}
+data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: StdGen}
 
 -- |The possible moves at any given time.
 data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop deriving (Show)
@@ -25,9 +26,9 @@ instance Show Game where
 
 -- |A default game instance.
 defaultGame :: Game
-defaultGame = Game {_grid=defaultGrid, _piece=p, _pieceGen=ps}
+defaultGame = Game {_grid=defaultGrid, _piece=p, _pieceGen=g}
   where
-    (p:ps) = allPiecesAtTop
+    (p, g) = randomPieceAtTop $ mkStdGen 42
 
 -- |Gets the logical grid with the current piece merged.
 logicalGrid :: Game -> Maybe Grid
@@ -38,9 +39,9 @@ logicalGrid game = withPiece (game ^. piece) (game ^. grid)
 fixPiece :: Game -> Maybe Game
 fixPiece game = do
   grid <- logicalGrid game
-  return $ flushCompleted Game {_grid=grid, _piece=newP, _pieceGen=ps}
+  return $ flushCompleted Game {_grid=grid, _piece=p, _pieceGen=g}
   where
-    (newP:ps) = game ^. pieceGen
+    (p, g) = randomPieceAtTop $ game ^. pieceGen
 
 -- |Remove any completed rows.
 flushCompleted :: Game -> Game

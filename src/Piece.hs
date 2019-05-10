@@ -1,5 +1,7 @@
 module Piece where
 
+import System.Random
+
 import Coordinate
 
 -- |Representation of piece color.
@@ -57,9 +59,14 @@ rPiece :: Piece
 rPiece = Piece [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordinate (1, 2)] DBlue
 
 -- |A generator for pieces appearing in the top-middle.
--- TODO: Introduce randomness.
 allPiecesAtTop :: [Piece]
-allPiecesAtTop = map (movePiece 4 20) $ cycle [rPiece, lPiece, linePiece, sPiece, squarePiece, zPiece]
+allPiecesAtTop = map (movePiece 4 20) $ cycle [rPiece, lPiece, linePiece, sPiece, squarePiece, zPiece, tPiece]
+
+-- |Gets a random piece at the top of the board.
+randomPieceAtTop :: RandomGen g => g -> (Piece, g)
+randomPieceAtTop g = (head $ drop n allPiecesAtTop, g')
+  where
+    (n, g') = randomR (0, 6) g
 
 -- |Moves a piece by the given distances.
 -- |No bounds checks - these are the game / grid's responsibility.
