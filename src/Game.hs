@@ -71,11 +71,10 @@ flushCompleted game = game & grid %~ flushGrid
 -- |Steps the game forward by dropping the current piece.
 -- |If it can't move, we fix the piece.
 step :: Game -> Game
-step game = flushCompleted validatedGame
+step game = flushCompleted $ guardGame (fixPiece game) newGame
   where
     newPiece = movePiece 0 (-1) $ game ^. piece
     newGame = game & piece .~ newPiece
-    validatedGame = if validateGame newGame then newGame else fixPiece game
 
 -- |Is the game complete?
 isComplete :: Game -> Bool
@@ -84,14 +83,6 @@ isComplete game = or $ map isPopulatedRow $ drop 20 gs
     (Grid gs) = game ^. grid
     isPopulatedRow = (\(Row r) -> any (/= Empty) r)
     
-
--- Is the state of the game valid?
-validateGame :: Game -> Bool
-validateGame game =
-  case logicalGrid game of
-    (Just _) -> True
-    Nothing -> False
-
 -- |Either get the updated game if valid, or return the default.
 guardGame :: Game -> Game -> Game
 guardGame defaultGame game = 
