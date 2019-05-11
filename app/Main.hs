@@ -7,6 +7,7 @@ import Control.Monad
 import Data.Maybe
 import System.IO
 import System.IO.HiddenChar
+import System.Random
 
 -- TODO:
 -- Piece preview
@@ -14,7 +15,6 @@ import System.IO.HiddenChar
 -- Speed linked to level & score
 -- Rotation correction, not blocking, better l-piece rotation
 -- Curses or better frontend
--- Random seed changes per game
 
 -- |Clear the terminal screen.
 clear :: IO ()
@@ -74,7 +74,8 @@ toMoves = reverse . catMaybes . (map toMove)
 main :: IO ()
 main = do
   hSetBuffering stdin NoBuffering
-  gameMv <- newMVar defaultGame
+  seed <- getStdGen
+  gameMv <- newMVar $ gameWithSeed seed
   inputsMv <- newMVar []
   forkIO $ do printLoop gameMv
   forkIO $ do moveLoop gameMv inputsMv

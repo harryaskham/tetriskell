@@ -24,9 +24,13 @@ instance Show Game where
 
 -- |A default game instance.
 defaultGame :: Game
-defaultGame = Game {_grid=defaultGrid, _piece=p, _pieceGen=g}
+defaultGame = gameWithSeed $ mkStdGen 42
+
+-- |A game with the given random seed.
+gameWithSeed :: StdGen -> Game
+gameWithSeed seed = Game {_grid=defaultGrid, _piece=p, _pieceGen=g}
   where
-    (p, g) = randomPieceAtTop $ mkStdGen 42
+    (p, g) = randomPieceAtTop seed
 
 -- |Gets the logical grid with the current piece merged.
 -- |Fails if the piece doesn't fit.
