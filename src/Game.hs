@@ -48,6 +48,13 @@ withGhostPiece game = game & grid .~ (newGame ^. grid)
   where
     newGame = fixPiece $ move Drop game
 
+-- |Gets the next piece to be dropped.
+-- |TODO: Display this alongside the board.
+nextPiece :: Game -> Piece
+nextPiece game = piece
+  where
+    (piece, _) = randomPieceAtTop $ game ^. pieceGen
+
 -- |Fixes the current piece where it is and generates a new one.
 fixPiece :: Game -> Game
 fixPiece game = Game {_grid=displayGrid game, _piece=p, _pieceGen=g}
@@ -66,6 +73,14 @@ step game = flushCompleted validatedGame
     newPiece = movePiece 0 (-1) $ game ^. piece
     newGame = game & piece .~ newPiece
     validatedGame = if validateGame newGame then newGame else fixPiece game
+
+-- |Is the game complete?
+isComplete :: Game -> Bool
+isComplete game = or $ map isPopulatedRow $ drop 20 gs
+  where
+    (Grid gs) = game ^. grid
+    isPopulatedRow = (\(Row r) -> any (/= Empty) r)
+    
 
 -- Is the state of the game valid?
 validateGame :: Game -> Bool

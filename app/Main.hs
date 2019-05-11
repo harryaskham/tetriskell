@@ -9,12 +9,12 @@ import System.IO
 import System.IO.HiddenChar
 
 -- TODO:
--- Detect game-over
 -- Piece preview
 -- Scoring
 -- Speed linked to level & score
 -- Rotation correction, not blocking, better l-piece rotation
 -- Curses or better frontend
+-- Random seed changes per game
 
 -- |Clear the terminal screen.
 clear :: IO ()
@@ -42,9 +42,12 @@ moveLoop gameMv inputsMv = do
 gameLoop :: MVar Game -> IO ()
 gameLoop gameMv = do
   game <- takeMVar gameMv
-  putMVar gameMv $ step game
-  threadDelay 500000 -- 0.5s between descending
-  gameLoop gameMv
+  if isComplete game then
+    return ()
+  else do
+    putMVar gameMv $ step game
+    threadDelay 100000 -- 0.5s between descending
+    gameLoop gameMv
 
 -- |Build up a list of chars given by getChar.
 getInputs :: MVar [Char] -> IO ()
@@ -74,6 +77,6 @@ main = do
   gameMv <- newMVar defaultGame
   inputsMv <- newMVar []
   forkIO $ do printLoop gameMv
-  forkIO $ do gameLoop gameMv
   forkIO $ do moveLoop gameMv inputsMv
-  getInputs inputsMv
+  forkIO $ do getInputs inputsMv
+  gameLoop gameMv
