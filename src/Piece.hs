@@ -60,6 +60,10 @@ lPiece = Piece [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordin
 rPiece :: Piece
 rPiece = Piece [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordinate (1, 2)] DBlue
 
+-- |Makes the piece black.
+makeBlack :: Piece -> Piece
+makeBlack (Piece cs _) = Piece cs Black
+
 -- |A generator for pieces appearing in the top-middle.
 allPiecesAtTop :: [Piece]
 allPiecesAtTop = map (movePiece 4 20) $ cycle [rPiece, lPiece, linePiece, sPiece, squarePiece, zPiece, tPiece]

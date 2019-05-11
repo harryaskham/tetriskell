@@ -50,7 +50,11 @@ displayGame game = withGhostPiece game
 withGhostPiece :: Game -> Game
 withGhostPiece game = game & grid .~ (newGame ^. grid)
   where
-    newGame = fixPiece $ move Drop game
+    newGame = (fixPiece . makePieceBlack) $ move Drop game
+
+-- |Makes the current piece black.
+makePieceBlack :: Game -> Game
+makePieceBlack game = game & piece %~ makeBlack
 
 -- |Gets the next piece to be dropped.
 -- |TODO: Display this alongside the board.
