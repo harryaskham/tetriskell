@@ -8,7 +8,6 @@ import Grid
 
 import Data.List
 import Control.Lens hiding (Empty)
-import Control.Monad.Loops
 import System.Random
 
 -- |The representation of the game state.
