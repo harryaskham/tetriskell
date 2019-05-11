@@ -22,10 +22,6 @@ makeLenses ''Game
 instance Show Game where
   show game = show $ displayGrid (displayGame game)
 
--- |A default game instance.
-defaultGame :: Game
-defaultGame = gameWithSeed $ mkStdGen 42
-
 -- |A game with the given random seed.
 gameWithSeed :: StdGen -> Game
 gameWithSeed seed = Game {_grid=defaultGrid, _piece=p, _pieceGen=g}
