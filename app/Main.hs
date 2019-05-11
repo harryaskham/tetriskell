@@ -15,6 +15,7 @@ import System.Random
 -- Speed linked to level & score
 -- Rotation correction, not blocking, better l-piece rotation
 -- Curses or better frontend
+-- AI for playing
 
 -- |Clear the terminal screen.
 clear :: IO ()
