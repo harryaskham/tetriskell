@@ -10,7 +10,7 @@ data Row = Row [Square]
 data Grid = Grid [Row]
 
 instance Show Square where
-  show Empty = "·"
+  show Empty = show Black ++ "·" ++ "\x1b[0m"
   show (Full c) = show c ++ "■" ++ "\x1b[0m"
 
 instance Show Grid where

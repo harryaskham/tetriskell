@@ -5,7 +5,8 @@ import System.Random
 import Coordinate
 
 -- |Representation of piece color.
-data Color = Red 
+data Color = Black
+           | Red 
            | DBlue
            | LBlue
            | Yellow
@@ -15,6 +16,7 @@ data Color = Red
            deriving (Eq)
 
 instance Show Color where
+  show Black = "\x1b[30m"
   show Red = "\x1b[31m"
   show DBlue = "\x1b[34m"
   show LBlue = "\x1b[36m"

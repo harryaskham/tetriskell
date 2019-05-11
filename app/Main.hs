@@ -46,7 +46,7 @@ gameLoop gameMv = do
     return ()
   else do
     putMVar gameMv $ step game
-    threadDelay 100000 -- 0.5s between descending
+    threadDelay 200000 -- 0.2s between steps
     gameLoop gameMv
 
 -- |Build up a list of chars given by getChar.
