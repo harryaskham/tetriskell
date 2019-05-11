@@ -9,12 +9,12 @@ import System.IO
 import System.IO.HiddenChar
 
 -- TODO:
+-- Detect game-over
 -- Piece preview
 -- Scoring
 -- Speed linked to level & score
--- Rotation correction, not blocking
+-- Rotation correction, not blocking, better l-piece rotation
 -- Curses or better frontend
--- Better use of Maybe in Game.hs
 
 -- |Clear the terminal screen.
 clear :: IO ()
@@ -42,12 +42,9 @@ moveLoop gameMv inputsMv = do
 gameLoop :: MVar Game -> IO ()
 gameLoop gameMv = do
   game <- takeMVar gameMv
-  case step game of
-    Just game -> do
-      putMVar gameMv game
-      threadDelay 500000 -- 0.5s between descending
-      gameLoop gameMv
-    Nothing -> return ()
+  putMVar gameMv $ step game
+  threadDelay 500000 -- 0.5s between descending
+  gameLoop gameMv
 
 -- |Build up a list of chars given by getChar.
 getInputs :: MVar [Char] -> IO ()

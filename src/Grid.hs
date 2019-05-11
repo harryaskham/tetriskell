@@ -64,6 +64,28 @@ setX col n (Row row@(x:xs))
     (Row xs) <- setX col (n-1) (Row xs)
     return $ Row (x:xs)
 
+-- |Places a piece on the grid.
+-- |No overlap or bounds checks.
+withPieceUnsafe :: Piece -> Grid -> Grid
+withPieceUnsafe (Piece [] _) g = g
+withPieceUnsafe (Piece (c:cs) col) g = withPieceUnsafe (Piece cs col) (withCoordinateUnsafe col c g)
+
+-- |Fills a single coordinate on the grid with the given color.
+-- |No overlap or bounds checks.
+withCoordinateUnsafe :: Color -> Coordinate -> Grid -> Grid
+withCoordinateUnsafe col (Coordinate (x, 0)) (Grid (g:gs)) = Grid ((setXUnsafe col x g):gs)
+withCoordinateUnsafe col (Coordinate (x, y)) (Grid ((Row g):gs)) = Grid ((Row g):rest)
+  where
+    (Grid rest) = withCoordinateUnsafe col (Coordinate (x, y-1)) (Grid gs)
+
+-- |Sets the x value of the given row with the given color
+-- |No overlap or bounds checks.
+setXUnsafe :: Color -> Int -> Row -> Row
+setXUnsafe col 0 (Row (_:xs)) = Row ((Full col):xs)
+setXUnsafe col n (Row (x:xs)) = Row (x:rest)
+  where
+    (Row rest) = setXUnsafe col (n-1) (Row xs)
+
 -- |Remove and replace any full rows.
 flushGrid :: Grid -> Grid
 flushGrid (Grid []) = Grid []
