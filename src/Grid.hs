@@ -19,6 +19,11 @@ instance Show Grid where
 instance Show Row where
   show (Row r) = concat . (map show) $ r
 
+instance Show Piece where
+  show piece = show $ withPieceUnsafe originPiece (emptyGrid 3 4)
+    where
+      (originPiece, _) = normaliseToOrigin piece
+
 -- |Creates an empty row.
 emptyRow :: Int -> Row
 emptyRow x = Row $ take x $ repeat Empty
@@ -73,6 +78,7 @@ withPieceUnsafe (Piece (c:cs) col) g = withPieceUnsafe (Piece cs col) (withCoord
 -- |Fills a single coordinate on the grid with the given color.
 -- |No overlap or bounds checks.
 withCoordinateUnsafe :: Color -> Coordinate -> Grid -> Grid
+withCoordinateUnsafe _ _ (Grid []) = Grid []
 withCoordinateUnsafe col (Coordinate (x, 0)) (Grid (g:gs)) = Grid ((setXUnsafe col x g):gs)
 withCoordinateUnsafe col (Coordinate (x, y)) (Grid ((Row g):gs)) = Grid ((Row g):rest)
   where

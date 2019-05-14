@@ -19,7 +19,7 @@ data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop deriving (Show)
 makeLenses ''Game
 
 instance Show Game where
-  show game = show $ displayGrid (displayGame game)
+  show game = (show $ nextPiece game) ++ "\n" ++ (show $ logicalGridUnsafe (displayGame game))
 
 -- |A game with the given random seed.
 gameWithSeed :: StdGen -> Game
@@ -32,9 +32,9 @@ gameWithSeed seed = Game {_grid=defaultGrid, _piece=p, _pieceGen=g}
 logicalGrid :: Game -> Maybe Grid
 logicalGrid game = withPiece (game ^. piece) (game ^. grid)
 
--- |Gets the game grid for display.
-displayGrid :: Game -> Grid
-displayGrid game = withPieceUnsafe (game ^. piece) (game ^. grid)
+-- |Gets the logical grid with the current piece merged.
+logicalGridUnsafe :: Game -> Grid
+logicalGridUnsafe game = withPieceUnsafe (game ^. piece) (game ^. grid)
 
 -- |Gets the game for display.
 displayGame :: Game -> Game
@@ -60,7 +60,7 @@ nextPiece game = piece
 
 -- |Fixes the current piece where it is and generates a new one.
 fixPiece :: Game -> Game
-fixPiece game = Game {_grid=displayGrid game, _piece=p, _pieceGen=g}
+fixPiece game = Game {_grid=logicalGridUnsafe game, _piece=p, _pieceGen=g}
   where
     (p, g) = randomPieceAtTop $ game ^. pieceGen
 

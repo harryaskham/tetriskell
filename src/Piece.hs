@@ -27,7 +27,7 @@ instance Show Color where
 
 -- |A generic representation of a Tetromino
 -- |TODO: Probably more nicely represented as a Record to avoid all the pattern matching for colors.
-data Piece = Piece [Coordinate] Color deriving (Show)
+data Piece = Piece [Coordinate] Color
 
 -- |A representation of a bounding box in (bottomLeft, topRight) form.
 data BoundingBox = BoundingBox (Coordinate, Coordinate) deriving (Show)
