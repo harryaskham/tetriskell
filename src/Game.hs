@@ -43,16 +43,15 @@ displayGame game = withGhostPiece game
 -- |Gets a copy of the game with the ghost-piece placed.
 -- |Use for display only.
 withGhostPiece :: Game -> Game
-withGhostPiece game = game & grid .~ (newGame ^. grid)
+withGhostPiece game = game & grid .~ (ghostGame ^. grid)
   where
-    newGame = (fixPiece . makePieceBlack) $ move Drop game
+    ghostGame = (fixPiece . makePieceBlack) $ move Drop game
 
 -- |Makes the current piece black.
 makePieceBlack :: Game -> Game
 makePieceBlack game = game & piece %~ makeBlack
 
 -- |Gets the next piece to be dropped.
--- |TODO: Display this alongside the board.
 nextPiece :: Game -> Piece
 nextPiece game = piece
   where
