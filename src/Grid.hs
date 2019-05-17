@@ -30,7 +30,7 @@ emptyRow x = Row $ take x $ repeat Empty
 
 -- |Creates an empty playing grid of the given dimensions.
 emptyGrid :: Int -> Int -> Grid
-emptyGrid x y = Grid $ (take (y + 4) $ repeat (emptyRow x))
+emptyGrid x y = Grid $ take (y + 4) $ repeat (emptyRow x)
 
 -- |The default playing field with a 4-line buffer.
 defaultGrid :: Grid
