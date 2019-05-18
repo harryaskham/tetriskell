@@ -1,6 +1,7 @@
 module Main where
 
 import Game
+import Agent
 
 import Control.Concurrent
 import Control.Monad
@@ -14,8 +15,7 @@ import System.Random
 -- Scoring
 -- Speed linked to level & score
 -- Rotation correction, not blocking, better l-piece rotation
--- Curses or better frontend
--- AI for playing
+-- Better AI for playing
 
 -- |Clear the terminal screen.
 clear :: IO ()
@@ -30,15 +30,15 @@ printLoop gameMv = do
   printLoop gameMv
 
 -- |Run the move-application loop.
-moveLoop :: MVar Game -> MVar [Char] -> IO ()
-moveLoop gameMv inputsMv = do
-  inputs <- takeMVar inputsMv
+moveLoop :: MVar Game -> MVar [Move] -> IO ()
+moveLoop gameMv movesMv = do
+  moves <- takeMVar movesMv
   game <- takeMVar gameMv
-  game <- return $ applyMoves (toMoves inputs) game
+  game <- return $ applyMoves moves game
   putMVar gameMv game
-  putMVar inputsMv []
-  moveLoop gameMv inputsMv
-  
+  putMVar movesMv []
+  moveLoop gameMv movesMv
+
 -- |Run the game loop.
 gameLoop :: MVar Game -> IO ()
 gameLoop gameMv = do
@@ -50,13 +50,23 @@ gameLoop gameMv = do
     threadDelay 200000 -- 0.2s between steps
     gameLoop gameMv
 
--- |Build up a list of chars given by getChar.
-getInputs :: MVar [Char] -> IO ()
-getInputs inputsMv = do
+-- |Build up a list of input moves given by getChar.
+getMoves :: MVar [Move] -> IO ()
+getMoves movesMv = do
   hSetBuffering stdin NoBuffering
   c <- getHiddenChar
-  modifyMVar_ inputsMv (\is -> return (c:is))
-  getInputs inputsMv
+  case toMove c of
+    Just c -> modifyMVar_ movesMv (\is -> return (c:is))
+    Nothing -> return ()
+  getMoves movesMv
+
+-- |Get the AI moves.
+getAgentMoves :: StdGen -> MVar [Move] -> IO ()
+getAgentMoves g movesMv = do
+  (m, g') <- return $ randomMove g
+  modifyMVar_ movesMv (\ms -> return (m:ms))
+  threadDelay 200000 -- 0.2s between moves
+  getAgentMoves g' movesMv
 
 -- |Maps input to move.
 toMove :: Char -> Maybe Move
@@ -77,8 +87,9 @@ main = do
   hSetBuffering stdin NoBuffering
   seed <- getStdGen
   gameMv <- newMVar $ gameWithSeed seed
-  inputsMv <- newMVar []
+  movesMv <- newMVar []
   forkIO $ do printLoop gameMv
-  forkIO $ do moveLoop gameMv inputsMv
-  forkIO $ do getInputs inputsMv
+  forkIO $ do moveLoop gameMv movesMv
+  --forkIO $ do getMoves movesMv
+  forkIO $ do getAgentMoves seed movesMv
   gameLoop gameMv
