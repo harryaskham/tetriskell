@@ -63,6 +63,17 @@ lowestEmptyRow game = fromMaybe 0 lowestEmptyRow
     (Grid rows) = game ^. grid
     lowestEmptyRow = findIndex (== True) (map rowEmpty rows)
 
+-- |Count the number of gaps per row.
+gaps :: Row -> Int
+gaps (Row (r:rs)) = length $ filter (\(a, b) -> a /= b) (zip (r:rs) rs)
+
+-- |How many gaps in the entire game?
+gameGaps :: Game -> Int
+gameGaps game = sum $ map gaps rows
+  where
+    (Grid rows) = game ^. grid
+
 -- |Assign a cost to a game.
+-- |TODO: cost for vertical gaps
 cost :: Game -> Int
-cost game = lowestEmptyRow game
+cost game = (20 * lowestEmptyRow game) + gameGaps game

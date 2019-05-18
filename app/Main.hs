@@ -65,7 +65,7 @@ executeAgentMoves :: [Move] -> MVar [Move] -> IO ()
 executeAgentMoves [] _ = return ()
 executeAgentMoves (m:ms) movesMv = do
   modifyMVar_ movesMv (return . (m:))
-  threadDelay 100000 -- 0.1s between move-delays
+  threadDelay 50000
   executeAgentMoves ms movesMv
 
 -- |Get the AI moves.
