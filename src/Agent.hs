@@ -45,11 +45,16 @@ allFutures game = steppedGames
     allFutureGames = (map applyMovesTracked allMoves) <*> [game]
     steppedGames = map (\(g, ms) -> (step g, ms)) allFutureGames
 
+-- |Takes a future game and its moves, and looks one step into the future from there.
+extendFutures :: (Game, [Move]) -> [(Game, [Move])]
+extendFutures (game, moves) = map (\(g, ms) -> (g, moves ++ ms)) $ allFutures game
+
 -- |Gets the best future and the moves that got us there.
 bestFuture :: Game -> (Game, [Move])
-bestFuture game = minimumBy compareCost $ allFutures game
+bestFuture game = minimumBy compareCost $ futures
   where
-    compareCost = (\(g1, _) (g2, _) -> compare (cost g1) (cost g2)) 
+    compareCost = (\(g1, _) (g2, _) -> compare (cost g1) (cost g2))
+    futures = allFutures game -- >>= extendFutures
 
 -- |Get the index of the first row that has no contents.
 lowestEmptyRow :: Game -> Int
