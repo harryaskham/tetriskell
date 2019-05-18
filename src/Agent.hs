@@ -3,6 +3,7 @@ module Agent where
 import System.Random
 import Data.List
 import Control.Lens
+import Control.Monad
 import Data.Maybe
 
 import Game
@@ -31,17 +32,31 @@ allFutures game = steppedGames
     allFutureGames = (map applyMovesTracked allMoves) <*> [game]
     steppedGames = map (\(g, ms) -> (step g, ms)) allFutureGames
 
+-- |Cull futures by dropping the top N
+cullFutures :: Int -> [(Game, [Move])] -> [(Game, [Move])]
+cullFutures n futures = map (\(g, ms, _) -> (g, ms)) $ take n sortedFutures
+  where
+    costedFutures = map (\(g, ms) -> (g, ms, cost g)) futures
+    sortedFutures = sortBy (\(_, _, c1) (_, _, c2) -> compare c1 c2) costedFutures
+
 -- |Takes a future game and its moves, and looks one step into the future from there.
--- |Ensures the move-chain makes sense.
+-- |Ensures the move-chain is retained.
 extendFutures :: (Game, [Move]) -> [(Game, [Move])]
 extendFutures (game, origMoves) = map (\(g, newMoves) -> (g, origMoves ++ newMoves)) $ allFutures game
+
+-- |Extends the future-list with culling.
+extendWithCulling :: Int -> (Game, [Move]) -> [(Game, [Move])]
+extendWithCulling n future = cullFutures n (extendFutures future)
 
 -- |Gets the best future and the moves that got us there.
 bestFuture :: Game -> (Game, [Move])
 bestFuture game = minimumBy compareCost $ futures
   where
     compareCost = (\(g1, _) (g2, _) -> compare (cost g1) (cost g2))
-    futures = allFutures game >>= extendFutures
+    present = (game, [])
+    extend = extendWithCulling 3
+    extendN n = foldr (>=>) return (replicate n extend)
+    futures = extendN 5 present
 
 -- |Get the index of the first row that has no contents.
 lowestEmptyRow :: Game -> Int
