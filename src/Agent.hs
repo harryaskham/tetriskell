@@ -8,27 +8,13 @@ import Data.Maybe
 import Game
 import Grid
 
-instance Random Move where
-  randomR (a, b) g =
-    case randomR (fromEnum a, fromEnum b) g of
-      (x, g') -> (toEnum x, g')
-  random g = randomR (minBound, maxBound) g
-
-randomMove :: StdGen -> (Move, StdGen)
-randomMove g = random g
-
--- |TODO: Generate all possible futures (all rotations, all left/rights, all drops)
--- |Use this for a one-piece lookahead future (two piece using nextPiece)
--- |Use these to pick the best future score.
--- |Give back all the moves that got us there.
-
 -- |Generates the moves that will generate all possible dropsites.
 -- |Quite wasteful, generates dupes.
 allMoves :: [[Move]]
 allMoves = movesWithDrops
   where
     takeToN n = map take [0..n]
-    sideMoves = (takeToN 10 <*> [repeat Left1]) ++ (takeToN 10 <*> [repeat Right1])
+    sideMoves = (takeToN 5 <*> [repeat Left1]) ++ (takeToN 5 <*> [repeat Right1])
     rotations = (takeToN 2 <*> [repeat RotateCW]) ++ (takeToN 2 <*> [repeat RotateCCW])
     movesWithRotations = (map (++) rotations) <*> sideMoves
     movesWithDrops = map (++ [Drop]) movesWithRotations
@@ -46,15 +32,16 @@ allFutures game = steppedGames
     steppedGames = map (\(g, ms) -> (step g, ms)) allFutureGames
 
 -- |Takes a future game and its moves, and looks one step into the future from there.
+-- |Ensures the move-chain makes sense.
 extendFutures :: (Game, [Move]) -> [(Game, [Move])]
-extendFutures (game, moves) = map (\(g, ms) -> (g, moves ++ ms)) $ allFutures game
+extendFutures (game, origMoves) = map (\(g, newMoves) -> (g, origMoves ++ newMoves)) $ allFutures game
 
 -- |Gets the best future and the moves that got us there.
 bestFuture :: Game -> (Game, [Move])
 bestFuture game = minimumBy compareCost $ futures
   where
     compareCost = (\(g1, _) (g2, _) -> compare (cost g1) (cost g2))
-    futures = allFutures game -- >>= extendFutures
+    futures = allFutures game >>= extendFutures
 
 -- |Get the index of the first row that has no contents.
 lowestEmptyRow :: Game -> Int
