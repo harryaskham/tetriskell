@@ -92,6 +92,9 @@ setXUnsafe col n (Row (x:xs)) = Row (x:rest)
   where
     (Row rest) = setXUnsafe col (n-1) (Row xs)
 
+rowEmpty :: Row -> Bool
+rowEmpty (Row r) = all (== Empty) r
+
 -- |Remove and replace any full rows.
 flushGrid :: Grid -> Grid
 flushGrid (Grid []) = Grid []

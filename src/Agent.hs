@@ -1,8 +1,12 @@
 module Agent where
 
 import System.Random
+import Data.List
+import Control.Lens
+import Data.Maybe
 
 import Game
+import Grid
 
 instance Random Move where
   randomR (a, b) g =
@@ -18,9 +22,42 @@ randomMove g = random g
 -- |Use these to pick the best future score.
 -- |Give back all the moves that got us there.
 
-highestFilledRow :: Game -> Int
-highestFilledRow _ = 0 -- TODO
+-- |Generates the moves that will generate all possible dropsites.
+-- |Quite wasteful, generates dupes.
+allMoves :: [[Move]]
+allMoves = movesWithDrops
+  where
+    takeToN n = map take [0..n]
+    sideMoves = (takeToN 10 <*> [repeat Left1]) ++ (takeToN 10 <*> [repeat Right1])
+    rotations = (takeToN 2 <*> [repeat RotateCW]) ++ (takeToN 2 <*> [repeat RotateCCW])
+    movesWithRotations = (map (++) rotations) <*> sideMoves
+    movesWithDrops = map (++ [Drop]) movesWithRotations
 
--- |Assign a score to a game.
-score :: Game -> Int
-score game = highestFilledRow game
+-- |Apply moves with tracking.
+applyMovesTracked :: [Move] -> Game -> (Game, [Move])
+applyMovesTracked moves game = (applyMoves moves game, moves)
+
+-- |Generate all games from here that have every combo of left, right, rotation and drop
+-- |Keeps track of the moves that generated it.
+allFutures :: Game -> [(Game, [Move])]
+allFutures game = steppedGames
+  where
+    allFutureGames = (map applyMovesTracked allMoves) <*> [game]
+    steppedGames = map (\(g, ms) -> (step g, ms)) allFutureGames
+
+-- |Gets the best future and the moves that got us there.
+bestFuture :: Game -> (Game, [Move])
+bestFuture game = minimumBy compareCost $ allFutures game
+  where
+    compareCost = (\(g1, _) (g2, _) -> compare (cost g1) (cost g2)) 
+
+-- |Get the index of the first row that has no contents.
+lowestEmptyRow :: Game -> Int
+lowestEmptyRow game = fromMaybe 0 lowestEmptyRow
+  where
+    (Grid rows) = game ^. grid
+    lowestEmptyRow = findIndex (== True) (map rowEmpty rows)
+
+-- |Assign a cost to a game.
+cost :: Game -> Int
+cost game = lowestEmptyRow game

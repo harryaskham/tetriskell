@@ -60,13 +60,21 @@ getMoves movesMv = do
     Nothing -> return ()
   getMoves movesMv
 
+-- |Executes the given movelist somewhat slowly.
+executeAgentMoves :: [Move] -> MVar [Move] -> IO ()
+executeAgentMoves [] _ = return ()
+executeAgentMoves (m:ms) movesMv = do
+  modifyMVar_ movesMv (return . (m:))
+  threadDelay 100000 -- 0.1s between move-delays
+  executeAgentMoves ms movesMv
+
 -- |Get the AI moves.
-getAgentMoves :: StdGen -> MVar [Move] -> IO ()
-getAgentMoves g movesMv = do
-  (m, g') <- return $ randomMove g
-  modifyMVar_ movesMv (\ms -> return (m:ms))
+getAgentMoves :: MVar Game -> MVar [Move] -> IO ()
+getAgentMoves gameMv movesMv = do
+  (_, bestMoves) <- withMVar gameMv (\g -> return $ bestFuture g)
+  executeAgentMoves bestMoves movesMv
   threadDelay 200000 -- 0.2s between moves
-  getAgentMoves g' movesMv
+  getAgentMoves gameMv movesMv
 
 -- |Maps input to move.
 toMove :: Char -> Maybe Move
@@ -82,6 +90,9 @@ toMove _ = Nothing
 toMoves :: [Char] -> [Move]
 toMoves = reverse . catMaybes . (map toMove)
 
+defaultGame :: Game
+defaultGame = gameWithSeed $ mkStdGen 42
+
 main :: IO ()
 main = do
   hSetBuffering stdin NoBuffering
@@ -91,5 +102,5 @@ main = do
   forkIO $ do printLoop gameMv
   forkIO $ do moveLoop gameMv movesMv
   --forkIO $ do getMoves movesMv
-  forkIO $ do getAgentMoves seed movesMv
+  forkIO $ do getAgentMoves gameMv movesMv
   gameLoop gameMv
