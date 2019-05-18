@@ -64,16 +64,25 @@ lowestEmptyRow game = fromMaybe 0 lowestEmptyRow
     lowestEmptyRow = findIndex (== True) (map rowEmpty rows)
 
 -- |Count the number of gaps per row.
-gaps :: Row -> Int
-gaps (Row (r:rs)) = length $ filter (\(a, b) -> a /= b) (zip (r:rs) rs)
+rowGaps :: Row -> Int
+rowGaps (Row (r:rs)) = length $ filter (\(a, b) -> a /= b) (zip (r:rs) rs)
+
+-- |Count the number of vertical gaps in the grid
+verticalGaps :: Grid -> Int
+verticalGaps (Grid []) = 0
+verticalGaps (Grid [_]) = 0
+verticalGaps (Grid (r1:r2:rs)) = numGaps + (verticalGaps $ Grid rs)
+  where
+    (Row s1) = r1
+    (Row s2) = r2
+    numGaps = length $ filter (\(a, b) -> a/= b) (zip s1 s2)
 
 -- |How many gaps in the entire game?
-gameGaps :: Game -> Int
-gameGaps game = sum $ map gaps rows
-  where
-    (Grid rows) = game ^. grid
+horizontalGaps :: Grid -> Int
+horizontalGaps (Grid rows) = sum $ map rowGaps rows
 
 -- |Assign a cost to a game.
--- |TODO: cost for vertical gaps
 cost :: Game -> Int
-cost game = (20 * lowestEmptyRow game) + gameGaps game
+cost game = (20 * lowestEmptyRow game) +
+            (1 * (horizontalGaps $ game ^. grid)) +
+            (1 * (verticalGaps $ game ^. grid))
