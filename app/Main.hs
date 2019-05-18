@@ -73,7 +73,6 @@ getAgentMoves :: MVar Game -> MVar [Move] -> IO ()
 getAgentMoves gameMv movesMv = do
   (_, bestMoves) <- withMVar gameMv (\g -> return $ bestFuture g)
   executeAgentMoves bestMoves movesMv
-  threadDelay 200000 -- 0.2s between moves
   getAgentMoves gameMv movesMv
 
 -- |Maps input to move.
