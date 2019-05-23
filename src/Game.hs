@@ -14,7 +14,7 @@ import System.Random
 data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: StdGen}
 
 -- |The possible moves at any given time.
-data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop deriving (Show, Bounded, Enum)
+data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop deriving (Show, Bounded, Enum, Eq)
 
 makeLenses ''Game
 

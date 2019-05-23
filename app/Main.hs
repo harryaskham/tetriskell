@@ -11,11 +11,9 @@ import System.IO.HiddenChar
 import System.Random
 
 -- TODO:
--- Piece preview
 -- Scoring
 -- Speed linked to level & score
 -- Rotation correction, not blocking, better l-piece rotation
--- Better AI for playing
 
 -- |Clear the terminal screen.
 clear :: IO ()
@@ -71,7 +69,8 @@ executeAgentMoves (m:ms) movesMv = do
 -- |Get the AI moves.
 getAgentMoves :: MVar Game -> MVar [Move] -> IO ()
 getAgentMoves gameMv movesMv = do
-  (_, bestMoves) <- withMVar gameMv (\g -> return $ bestFuture g)
+  -- (_, bestMoves) <- withMVar gameMv (\g -> return $ bestFuture g)
+  bestMoves <- withMVar gameMv (\g -> return $ bestDrop g)
   executeAgentMoves bestMoves movesMv
   getAgentMoves gameMv movesMv
 

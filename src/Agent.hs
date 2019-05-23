@@ -10,7 +10,6 @@ import Game
 import Grid
 
 -- |Generates the moves that will generate all possible dropsites.
--- |Quite wasteful, generates dupes.
 allMoves :: [[Move]]
 allMoves = movesWithDrops
   where
@@ -29,7 +28,7 @@ applyMovesTracked moves game = (applyMoves moves game, moves)
 allFutures :: Game -> [(Game, [Move])]
 allFutures game = steppedGames
   where
-    allFutureGames = (map applyMovesTracked allMoves) <*> [game]
+    allFutureGames = (map applyMovesTracked allMoves) <*> pure game
     steppedGames = map (\(g, ms) -> (step g, ms)) allFutureGames
 
 -- |Cull futures by dropping the top N
@@ -53,10 +52,17 @@ bestFuture :: Game -> (Game, [Move])
 bestFuture game = minimumBy compareCost $ futures
   where
     compareCost = (\(g1, _) (g2, _) -> compare (cost g1) (cost g2))
-    present = (game, [])
-    extend = extendWithCulling 3
+    present = (game, mempty)
+    extend = extendWithCulling 3  -- The top N paths to consider
     extendN n = foldr (>=>) return (replicate n extend)
-    futures = extendN 5 present
+    futures = extendN 5 present  -- The number of moves into the future to consider
+
+-- |Gets the best set of moves up to the first Drop event.
+-- |This means that each move has the fullest context.
+bestDrop :: Game -> [Move]
+bestDrop game = takeWhile (\m -> m /= Drop) moves ++ [Drop]
+  where
+    (_, moves) = bestFuture game
 
 -- |Get the index of the first row that has no contents.
 lowestEmptyRow :: Game -> Int
@@ -86,5 +92,5 @@ horizontalGaps (Grid rows) = sum $ map rowGaps rows
 -- |Assign a cost to a game.
 cost :: Game -> Int
 cost game = (20 * lowestEmptyRow game) +
-            (1 * (horizontalGaps $ game ^. grid)) +
+            (3 * (horizontalGaps $ game ^. grid)) +
             (3 * (verticalGaps $ game ^. grid))
