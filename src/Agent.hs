@@ -55,7 +55,7 @@ bestFuture game = minimumBy compareCost $ futures
     present = (game, mempty)
     extend = extendWithCulling 3  -- The top N paths to consider
     extendN n = foldr (>=>) return (replicate n extend)
-    futures = extendN 5 present  -- The number of moves into the future to consider
+    futures = extendN 3 present  -- The number of moves into the future to consider
 
 -- |Gets the best set of moves up to the first Drop event.
 -- |This means that each move has the fullest context.
