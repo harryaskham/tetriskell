@@ -92,5 +92,5 @@ horizontalGaps (Grid rows) = sum $ map rowGaps rows
 -- |Assign a cost to a game.
 cost :: Game -> Int
 cost game = (2 ^ lowestEmptyRow game) +
-            (3 * (horizontalGaps $ game ^. grid)) +
-            (3 * (verticalGaps $ game ^. grid))
+            (1 * (horizontalGaps $ game ^. grid)) +
+            (2 * (verticalGaps $ game ^. grid))
