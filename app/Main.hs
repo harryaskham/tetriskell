@@ -11,6 +11,8 @@ import System.IO.HiddenChar
 import System.Random
 
 -- TODO:
+-- Use Vector instead of LL for grid impl
+-- Use MonadPlus e.g. Stream for backtracking in AI
 -- Scoring
 -- Speed linked to level & score
 -- Rotation correction, not blocking, better l-piece rotation
