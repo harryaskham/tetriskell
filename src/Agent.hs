@@ -9,6 +9,9 @@ import Data.Maybe
 import Game
 import Grid
 
+lookahead = 4  -- The number of moves into the future to consider
+culling = 4  -- The top N paths to consider
+
 -- |Generates the moves that will generate all possible dropsites.
 allMoves :: [[Move]]
 allMoves = movesWithDrops
@@ -53,9 +56,9 @@ bestFuture game = minimumBy compareCost $ futures
   where
     compareCost = (\(g1, _) (g2, _) -> compare (cost g1) (cost g2))
     present = (game, mempty)
-    extend = extendWithCulling 3  -- The top N paths to consider
+    extend = extendWithCulling culling
     extendN n = foldr (>=>) return (replicate n extend)
-    futures = extendN 3 present  -- The number of moves into the future to consider
+    futures = extendN lookahead present
 
 -- |Gets the best set of moves up to the first Drop event.
 -- |This means that each move has the fullest context.
@@ -91,6 +94,7 @@ horizontalGaps (Grid rows) = sum $ map rowGaps rows
 
 -- |Assign a cost to a game.
 cost :: Game -> Int
-cost game = (2 ^ lowestEmptyRow game) +
-            (1 * (horizontalGaps $ game ^. grid)) +
-            (2 * (verticalGaps $ game ^. grid))
+cost game = 0
+            + (2 ^ lowestEmptyRow game)
+            + (1 * (horizontalGaps $ game ^. grid))
+            + (2 * (verticalGaps $ game ^. grid))
