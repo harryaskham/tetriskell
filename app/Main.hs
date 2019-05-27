@@ -11,7 +11,6 @@ import System.IO.HiddenChar
 import System.Random
 
 -- TODO:
--- We switched to vector but it maybe slowed things
 -- Use MonadPlus e.g. Stream for backtracking in AI
 -- Scoring
 -- Speed linked to level & score

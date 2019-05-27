@@ -45,7 +45,7 @@ displayGame game = withGhostPiece game
 withGhostPiece :: Game -> Game
 withGhostPiece game = game & grid .~ (ghostGame ^. grid)
   where
-    ghostGame = (fixPiece . makePieceBlack) $ move Drop game
+    ghostGame = (fixPiece . makePieceBlack) $ moveFullyDown game
 
 -- |Makes the current piece black.
 makePieceBlack :: Game -> Game
@@ -86,15 +86,17 @@ guardGame defaultGame game =
     (Just _) -> game
     Nothing -> defaultGame
 
+-- |Move the current piece all the way down for ghost-piece purposes / drops.
+moveFullyDown :: Game -> Game
+moveFullyDown game = foldr (.) id (replicate 24 (move Down1)) $ game
+
 -- |Apply the given move to the game if possible.
 -- |If not possible, just returns the current game.
 move :: Move -> Game -> Game 
 move Left1 game = guardGame game $ game & piece %~ (movePiece (-1) 0)
 move Right1 game = guardGame game $ game & piece %~ (movePiece 1 0)
 move Down1 game = guardGame game $ game & piece %~ (movePiece 0 (-1))
-move Drop game = flushCompleted . fixPiece $ dropPiece game -- TODO: remove duplication
-  where
-    dropPiece game = foldr (.) id (replicate 24 (move Down1)) $ game
+move Drop game = flushCompleted . fixPiece $ moveFullyDown game
 move RotateCW game = guardGame game $ game & piece %~ rotate CW
 move RotateCCW game = guardGame game $ game & piece %~ rotate CCW
 
