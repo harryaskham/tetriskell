@@ -4,20 +4,22 @@ import Coordinate
 import Piece
 
 import Data.List
+import Data.Maybe
+import qualified Data.Vector as V
 
 data Square = Empty | Full Color deriving (Eq)
-data Row = Row [Square]
-data Grid = Grid [Row]
+data Row = Row (V.Vector Square)
+data Grid = Grid (V.Vector Row)
 
 instance Show Square where
   show Empty = show Black ++ "·" ++ "\x1b[0m"
   show (Full c) = show c ++ "■" ++ "\x1b[0m"
 
 instance Show Grid where
-  show (Grid g) = intercalate "\n" . map show . drop 4 . reverse $ g
+  show (Grid g) = intercalate "\n" . map show . drop 4 . reverse $ V.toList g
 
 instance Show Row where
-  show (Row r) = concat . (map show) $ r
+  show (Row r) = concat . (map show) $ V.toList r
 
 instance Show Piece where
   show piece = show $ withPieceUnsafe originPiece (emptyGrid 3 4)
@@ -26,11 +28,11 @@ instance Show Piece where
 
 -- |Creates an empty row.
 emptyRow :: Int -> Row
-emptyRow x = Row $ take x $ repeat Empty
+emptyRow x = Row $ V.replicate x Empty
 
 -- |Creates an empty playing grid of the given dimensions.
 emptyGrid :: Int -> Int -> Grid
-emptyGrid x y = Grid $ take (y + 4) $ repeat (emptyRow x)
+emptyGrid x y = Grid $ V.replicate (y + 4) (emptyRow x)
 
 -- |The default playing field with a 4-line buffer.
 defaultGrid :: Grid
@@ -46,28 +48,20 @@ withPiece (Piece (c:cs) col) g = do
 
 -- |Fills a single coordinate on the grid with the given color if possible.
 withCoordinate :: Color -> Coordinate -> Grid -> Maybe Grid
-withCoordinate col (Coordinate (x, 0)) (Grid (g:gs)) = do
-  (Row r) <- setX col x g
-  return $ Grid ((Row r):gs)
-withCoordinate col (Coordinate (x, y)) (Grid ((Row g):gs))
-  | x < 0 = Nothing
+withCoordinate col (Coordinate (x, y)) (Grid g)
   | y < 0 = Nothing
-  | x >= length g = Nothing
-  | y >= length gs = Nothing
+  | y >= length g = Nothing
   | otherwise = do
-    (Grid gs) <- withCoordinate col (Coordinate (x, y-1)) (Grid gs)
-    return $ Grid ((Row g):gs)
+    newRow <- setX col x $ g V.! y
+    return $ Grid $ g V.// [(y, newRow)]
 
 -- |Sets the x value of the given row with the given color if possible.
 setX :: Color -> Int -> Row -> Maybe Row
-setX _ 0 (Row ((Full _):_)) = Nothing
-setX col 0 (Row (Empty:xs)) = Just $ Row ((Full col):xs)
-setX col n (Row row@(x:xs))
-  | n < 0 = Nothing
-  | n >= length row = Nothing
-  | otherwise = do
-    (Row xs) <- setX col (n-1) (Row xs)
-    return $ Row (x:xs)
+setX col x (Row r)
+  | x < 0 = Nothing
+  | x >= V.length r = Nothing
+  | r V.! x /= Empty = Nothing
+  | otherwise = Just $ Row $ r V.// [(x, Full col)]
 
 -- |Places a piece on the grid.
 -- |No overlap or bounds checks.
@@ -78,30 +72,60 @@ withPieceUnsafe (Piece (c:cs) col) g = withPieceUnsafe (Piece cs col) (withCoord
 -- |Fills a single coordinate on the grid with the given color.
 -- |No overlap or bounds checks.
 withCoordinateUnsafe :: Color -> Coordinate -> Grid -> Grid
-withCoordinateUnsafe _ _ (Grid []) = Grid []
-withCoordinateUnsafe col (Coordinate (x, 0)) (Grid (g:gs)) = Grid ((setXUnsafe col x g):gs)
-withCoordinateUnsafe col (Coordinate (x, y)) (Grid ((Row g):gs)) = Grid ((Row g):rest)
+withCoordinateUnsafe col (Coordinate (x, y)) (Grid g)
+  | y < 0 = Grid g
+  | y >= (V.length g) = Grid g
+  | otherwise = Grid $ g V.// [(y, newRow)]
   where
-    (Grid rest) = withCoordinateUnsafe col (Coordinate (x, y-1)) (Grid gs)
+    newRow = setXUnsafe col x (g V.! y) 
 
 -- |Sets the x value of the given row with the given color
 -- |No overlap or bounds checks.
 setXUnsafe :: Color -> Int -> Row -> Row
-setXUnsafe col 0 (Row (_:xs)) = Row ((Full col):xs)
-setXUnsafe col n (Row (x:xs)) = Row (x:rest)
-  where
-    (Row rest) = setXUnsafe col (n-1) (Row xs)
+setXUnsafe col x (Row r)
+  | x < 0 = Row r
+  | x >= V.length r = Row r
+  | otherwise = Row $ r V.// [(x, Full col)]
 
 rowEmpty :: Row -> Bool
 rowEmpty (Row r) = all (== Empty) r
 
+rowFull :: Row -> Bool
+rowFull (Row r) = all (/= Empty) r
+
+rowPopulated :: Row -> Bool
+rowPopulated = not . rowEmpty
+
+-- |Is the grid full?
+isGridComplete :: Grid -> Bool
+isGridComplete (Grid g) = or $ fmap rowPopulated $ V.drop 20 g
+
 -- |Remove and replace any full rows.
 flushGrid :: Grid -> Grid
-flushGrid (Grid []) = Grid []
-flushGrid (Grid ((Row r):rs)) =
-  if all (/= Empty) r then
-    Grid (rest ++ [emptyRow (length r)])
-  else
-    Grid ((Row r):rest)
+flushGrid (Grid g) = Grid $ withoutFullRows V.++ newEmptyRows
   where
-    (Grid rest) = flushGrid $ Grid rs
+    (Row firstRow) = g V.! 0
+    fullCount = V.length $ V.filter rowFull g
+    newEmptyRows = V.replicate fullCount $ emptyRow (V.length firstRow)
+    withoutFullRows = V.filter (not . rowFull) g
+
+-- |Count the number of gaps per row.
+rowGaps :: Row -> Int
+rowGaps (Row r) = length $ V.filter (\(a, b) -> a /= b) (V.zip r $ V.drop 1 r)
+
+-- |Count the number of vertical gaps between two rows.
+verticalGaps2 :: (Row, Row) -> Int
+verticalGaps2 ((Row r1), (Row r2)) = length $ V.filter (\(a, b) -> a /= b) (V.zip r1 r2)
+
+-- |Count the number of vertical gaps in the grid
+verticalGaps :: Grid -> Int
+verticalGaps (Grid g) = sum $ fmap verticalGaps2 (V.zip g $ V.drop 1 g)
+
+-- |How many gaps in the entire game?
+horizontalGaps :: Grid -> Int
+horizontalGaps (Grid g) = sum $ fmap rowGaps g
+
+-- |Get the index of the first row that has no contents.
+lowestEmptyGridRow :: Grid -> Int
+lowestEmptyGridRow (Grid g) = fromMaybe 0 $ V.findIndex (== True) (fmap rowEmpty g)
+

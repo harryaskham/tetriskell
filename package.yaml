@@ -23,6 +23,7 @@ dependencies:
 - lens
 - hidden-char
 - random
+- vector
 
 library:
   source-dirs: src

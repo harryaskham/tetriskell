@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 681b9f304d47f326dc9a5f920314503347e437c949ee469c60d80cbfe7e8f707
+-- hash: 6caf3feb0f940c60fd8c4e7249a20be5670dcba01f8a5240fa745d03adb835fc
 
 name:           tetriskell
 version:        0.1.0.0
@@ -39,6 +39,7 @@ library
     , hidden-char
     , lens
     , random
+    , vector
   default-language: Haskell2010
 
 executable tetriskell-exe
@@ -54,4 +55,5 @@ executable tetriskell-exe
     , lens
     , random
     , tetriskell
+    , vector
   default-language: Haskell2010

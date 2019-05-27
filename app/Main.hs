@@ -11,7 +11,7 @@ import System.IO.HiddenChar
 import System.Random
 
 -- TODO:
--- Use Vector instead of LL for grid impl
+-- We switched to vector but it maybe slowed things
 -- Use MonadPlus e.g. Stream for backtracking in AI
 -- Scoring
 -- Speed linked to level & score
@@ -101,6 +101,6 @@ main = do
   movesMv <- newMVar []
   forkIO $ do printLoop gameMv
   forkIO $ do moveLoop gameMv movesMv
-  --forkIO $ do getMoves movesMv
+  forkIO $ do getMoves movesMv
   forkIO $ do getAgentMoves gameMv movesMv
   gameLoop gameMv

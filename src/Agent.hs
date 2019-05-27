@@ -67,30 +67,9 @@ bestDrop game = takeWhile (\m -> m /= Drop) moves ++ [Drop]
   where
     (_, moves) = bestFuture game
 
--- |Get the index of the first row that has no contents.
+-- |Get the lowest empty row in the game.
 lowestEmptyRow :: Game -> Int
-lowestEmptyRow game = fromMaybe 0 lowestEmptyRow
-  where
-    (Grid rows) = game ^. grid
-    lowestEmptyRow = findIndex (== True) (map rowEmpty rows)
-
--- |Count the number of gaps per row.
-rowGaps :: Row -> Int
-rowGaps (Row (r:rs)) = length $ filter (\(a, b) -> a /= b) (zip (r:rs) rs)
-
--- |Count the number of vertical gaps in the grid
-verticalGaps :: Grid -> Int
-verticalGaps (Grid []) = 0
-verticalGaps (Grid [_]) = 0
-verticalGaps (Grid (r1:r2:rs)) = numGaps + (verticalGaps $ Grid rs)
-  where
-    (Row s1) = r1
-    (Row s2) = r2
-    numGaps = length $ filter (\(a, b) -> a/= b) (zip s1 s2)
-
--- |How many gaps in the entire game?
-horizontalGaps :: Grid -> Int
-horizontalGaps (Grid rows) = sum $ map rowGaps rows
+lowestEmptyRow game = lowestEmptyGridRow $ game ^. grid
 
 -- |Assign a cost to a game.
 cost :: Game -> Int

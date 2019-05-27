@@ -77,11 +77,8 @@ step game = flushCompleted $ guardGame (fixPiece game) newGame
 
 -- |Is the game complete?
 isComplete :: Game -> Bool
-isComplete game = or $ map isPopulatedRow $ drop 20 gs
-  where
-    (Grid gs) = game ^. grid
-    isPopulatedRow = (\(Row r) -> any (/= Empty) r)
-    
+isComplete game = isGridComplete $ game ^. grid
+
 -- |Either get the updated game if valid, or return the default.
 guardGame :: Game -> Game -> Game
 guardGame defaultGame game = 
