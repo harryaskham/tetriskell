@@ -14,7 +14,7 @@ culling = 4  -- The top N paths to consider
 
 -- |Generates the moves that will generate all possible dropsites.
 allMoves :: [[Move]]
-allMoves = movesWithDrops
+allMoves = nub movesWithDrops
   where
     takeToN n = map take [0..n]
     sideMoves = (takeToN 5 <*> [repeat Left1]) ++ (takeToN 5 <*> [repeat Right1])
@@ -48,7 +48,7 @@ extendFutures (game, origMoves) = map (\(g, newMoves) -> (g, origMoves ++ newMov
 
 -- |Extends the future-list with culling.
 extendWithCulling :: Int -> (Game, [Move]) -> [(Game, [Move])]
-extendWithCulling n future = cullFutures n (extendFutures future)
+extendWithCulling n future = cullFutures n $ extendFutures future
 
 -- |Gets the best future and the moves that got us there.
 bestFuture :: Game -> (Game, [Move])
@@ -57,7 +57,7 @@ bestFuture game = minimumBy compareCost $ futures
     compareCost = (\(g1, _) (g2, _) -> compare (cost g1) (cost g2))
     present = (game, mempty)
     extend = extendWithCulling culling
-    extendN n = foldr (>=>) return (replicate n extend)
+    extendN n = foldr (>=>) return $ replicate n extend
     futures = extendN lookahead present
 
 -- |Gets the best set of moves up to the first Drop event.
@@ -67,13 +67,9 @@ bestDrop game = takeWhile (\m -> m /= Drop) moves ++ [Drop]
   where
     (_, moves) = bestFuture game
 
--- |Get the lowest empty row in the game.
-lowestEmptyRow :: Game -> Int
-lowestEmptyRow game = lowestEmptyGridRow $ game ^. grid
-
 -- |Assign a cost to a game.
 cost :: Game -> Int
 cost game = 0
-            + (2 ^ lowestEmptyRow game)
+            + (2 ^ (lowestEmptyRow $ game ^. grid))
             + (1 * (horizontalGaps $ game ^. grid))
             + (2 * (verticalGaps $ game ^. grid))

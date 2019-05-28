@@ -11,7 +11,8 @@ import System.IO.HiddenChar
 import System.Random
 
 -- TODO:
--- Use MonadPlus e.g. Stream for backtracking in AI
+-- Better search (A* maybe)
+-- Profiling
 -- Scoring
 -- Speed linked to level & score
 -- Rotation correction, not blocking, better l-piece rotation
@@ -70,9 +71,8 @@ executeAgentMoves (m:ms) movesMv = do
 -- |Get the AI moves.
 getAgentMoves :: MVar Game -> MVar [Move] -> IO ()
 getAgentMoves gameMv movesMv = do
-  -- (_, bestMoves) <- withMVar gameMv (\g -> return $ bestFuture g)
-  bestMoves <- withMVar gameMv (\g -> return $ bestDrop g)
-  executeAgentMoves bestMoves movesMv
+  moves <- withMVar gameMv (\g -> return $ bestDrop g)
+  executeAgentMoves moves movesMv
   getAgentMoves gameMv movesMv
 
 -- |Maps input to move.
