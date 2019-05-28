@@ -128,4 +128,3 @@ horizontalGaps (Grid g) = sum $ fmap rowGaps g
 -- |Get the index of the first row that has no contents.
 lowestEmptyRow :: Grid -> Int
 lowestEmptyRow (Grid g) = fromMaybe 0 $ V.findIndex (== True) (fmap rowEmpty g)
-

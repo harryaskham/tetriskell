@@ -9,9 +9,6 @@ import Data.Maybe
 import Game
 import Grid
 
-lookahead = 4  -- The number of moves into the future to consider
-culling = 4  -- The top N paths to consider
-
 -- |Generates the moves that will generate all possible dropsites.
 allMoves :: [[Move]]
 allMoves = nub movesWithDrops
@@ -34,7 +31,7 @@ allFutures game = steppedGames
     allFutureGames = (map applyMovesTracked allMoves) <*> pure game
     steppedGames = map (\(g, ms) -> (step g, ms)) allFutureGames
 
--- |Cull futures by dropping the top N
+-- |Cull futures by taking only the top N
 cullFutures :: Int -> [(Game, [Move])] -> [(Game, [Move])]
 cullFutures n futures = map (\(g, ms, _) -> (g, ms)) $ take n sortedFutures
   where
@@ -50,15 +47,19 @@ extendFutures (game, origMoves) = map (\(g, newMoves) -> (g, origMoves ++ newMov
 extendWithCulling :: Int -> (Game, [Move]) -> [(Game, [Move])]
 extendWithCulling n future = cullFutures n $ extendFutures future
 
+-- |Runs multiple iterations of the culling extension.
+-- |Uses the lookahead/culling global arguments.
+extendFuturesN :: (Game, [Move]) -> [(Game, [Move])]
+extendFuturesN = foldr (>=>) return $ replicate lookahead (extendWithCulling culling)
+  where
+    lookahead = 4  -- The number of moves into the future to consider
+    culling = 4  -- The top N paths to consider
+
 -- |Gets the best future and the moves that got us there.
 bestFuture :: Game -> (Game, [Move])
-bestFuture game = minimumBy compareCost $ futures
+bestFuture game = minimumBy compareCost $ extendFuturesN (game, mempty)
   where
     compareCost = (\(g1, _) (g2, _) -> compare (cost g1) (cost g2))
-    present = (game, mempty)
-    extend = extendWithCulling culling
-    extendN n = foldr (>=>) return $ replicate n extend
-    futures = extendN lookahead present
 
 -- |Gets the best set of moves up to the first Drop event.
 -- |This means that each move has the fullest context.
