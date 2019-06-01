@@ -18,8 +18,8 @@ import System.Random
 -- Rotation correction, not blocking, better l-piece rotation
 -- Piece hold
 
-speedMod = 0.3  -- higher is slower; too low and you hit the decision timeout threshold
-agentMoveDelay = round $ speedMod * 50000
+speedMod = 0.2  -- higher is slower; too low and you hit the decision timeout threshold
+agentMoveDelay = round $ speedMod * 25000
 fps60Delay = 16666
 stepDelay = round $ speedMod * 100000
 
