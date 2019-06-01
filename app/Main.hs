@@ -17,7 +17,7 @@ import System.Random
 -- Speed linked to level & score
 -- Rotation correction, not blocking, better l-piece rotation
 
-agentMoveDelay = 50000
+agentMoveDelay = 25000
 fps60Delay = 16666
 stepDelay = 1000000
 
@@ -112,6 +112,7 @@ main = do
   movesMv <- newMVar []
   forkIO $ do printLoop gameMv
   -- forkIO $ do moveLoop gameMv movesMv
+  -- enable above to accept human input
   forkIO $ do getMoves movesMv
   forkIO $ do getAgentMoves gameMv movesMv
   gameLoop gameMv
