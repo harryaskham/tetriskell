@@ -11,8 +11,7 @@ import System.IO.HiddenChar
 import System.Random
 
 -- TODO:
--- Better search (A* maybe)
--- Profiling
+-- Tracker for num lines to eval agents
 -- Scoring
 -- Speed linked to level & score
 -- Rotation correction, not blocking, better l-piece rotation
