@@ -17,6 +17,10 @@ import System.Random
 -- Speed linked to level & score
 -- Rotation correction, not blocking, better l-piece rotation
 
+agentMoveDelay = 50000
+fps60Delay = 16666
+stepDelay = 1000000
+
 -- |Clear the terminal screen.
 clear :: IO ()
 clear = putStr "\ESC[2J"
@@ -26,7 +30,7 @@ printLoop :: MVar Game -> IO ()
 printLoop gameMv = do
   clear
   withMVar gameMv (putStrLn . show)
-  threadDelay 16666  -- 60fps
+  threadDelay fps60Delay
   printLoop gameMv
 
 -- |Run the move-application loop.
@@ -34,8 +38,7 @@ moveLoop :: MVar Game -> MVar [Move] -> IO ()
 moveLoop gameMv movesMv = do
   moves <- takeMVar movesMv
   game <- takeMVar gameMv
-  game <- return $ applyMoves moves game
-  putMVar gameMv game
+  putMVar gameMv $ applyMoves moves game
   putMVar movesMv []
   moveLoop gameMv movesMv
 
@@ -47,7 +50,7 @@ gameLoop gameMv = do
     return ()
   else do
     putMVar gameMv $ step game
-    threadDelay 1000000
+    threadDelay stepDelay
     gameLoop gameMv
 
 -- |Build up a list of input moves given by getChar.
@@ -65,15 +68,24 @@ executeAgentMoves :: [Move] -> MVar [Move] -> IO ()
 executeAgentMoves [] _ = return ()
 executeAgentMoves (m:ms) movesMv = do
   modifyMVar_ movesMv (return . (m:))
-  threadDelay 50000
+  threadDelay agentMoveDelay
   executeAgentMoves ms movesMv
 
 -- |Get the AI moves.
 getAgentMoves :: MVar Game -> MVar [Move] -> IO ()
 getAgentMoves gameMv movesMv = do
   moves <- withMVar gameMv (\g -> return $ bestDrop g)
-  executeAgentMoves moves movesMv
+  --executeAgentMoves moves movesMv
+  executeAgentMovesHack moves gameMv
   getAgentMoves gameMv movesMv
+
+-- |SPEED HACK: Agent is able to modify the game directly instead of going via the moveLoop.
+executeAgentMovesHack :: [Move] -> MVar Game -> IO ()
+executeAgentMovesHack [] _ = return ()
+executeAgentMovesHack (m:ms) gameMv = do
+  modifyMVar_ gameMv $ return . applyMoves [m]
+  threadDelay agentMoveDelay
+  executeAgentMovesHack ms gameMv
 
 -- |Maps input to move.
 toMove :: Char -> Maybe Move
@@ -99,7 +111,7 @@ main = do
   gameMv <- newMVar $ gameWithSeed seed
   movesMv <- newMVar []
   forkIO $ do printLoop gameMv
-  forkIO $ do moveLoop gameMv movesMv
+  -- forkIO $ do moveLoop gameMv movesMv
   forkIO $ do getMoves movesMv
   forkIO $ do getAgentMoves gameMv movesMv
   gameLoop gameMv
