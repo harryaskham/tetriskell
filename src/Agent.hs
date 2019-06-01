@@ -52,8 +52,8 @@ extendWithCulling n future = cullFutures n $ extendFutures future
 extendFuturesN :: (Game, [Move]) -> [(Game, [Move])]
 extendFuturesN = foldr (>=>) return $ replicate lookahead (extendWithCulling culling)
   where
-    lookahead = 6  -- The number of moves into the future to consider
-    culling = 2  -- The top N paths to consider
+    lookahead = 4  -- The number of moves into the future to consider
+    culling = 4  -- The top N paths to consider
 
 -- |Gets the best future and the moves that got us there.
 bestFuture :: Game -> (Game, [Move])
