@@ -11,6 +11,7 @@ import System.IO.HiddenChar
 import System.Random
 
 -- TODO:
+-- Piece preview on RHS, piece hold on LHS
 -- Tracker for num lines to eval agents
 -- Agent assesses drops with extra moves at the end e.g. L, R or rotation to slot into gaps
 -- Scoring
