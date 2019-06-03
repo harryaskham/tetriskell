@@ -26,7 +26,7 @@ instance Show Game where
       gameLines = splitOn "\n" $ show $ logicalGridUnsafe (displayGame game)
       nextPieceLines = linesForPiece (Just $ nextPiece game) "next"
       heldPieceLines = linesForPiece (game ^. heldPiece) "held"
-      scoreLine = "score: " ++ show (game ^. score)
+      scoreLine = "lines: " ++ show (game ^. score)
       allLines = scoreLine : "\n" : zipWith (++) gameLines (nextPieceLines ++ [""] ++ heldPieceLines ++ repeat "")
 
 -- |Get the display lines for a given piece on the RHS of the grid.
