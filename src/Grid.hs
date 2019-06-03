@@ -8,8 +8,8 @@ import Data.Maybe
 import qualified Data.Vector as V
 
 data Square = Empty | Full Color deriving (Eq)
-data Row = Row (V.Vector Square)
-data Grid = Grid (V.Vector Row)
+newtype Row = Row (V.Vector Square)
+newtype Grid = Grid (V.Vector Row)
 
 instance Show Square where
   show Empty = show Black ++ "·" ++ "\x1b[0m"
@@ -19,7 +19,7 @@ instance Show Grid where
   show (Grid g) = intercalate "\n" . map show . drop 4 . reverse $ V.toList g
 
 instance Show Row where
-  show (Row r) = concat . (map show) $ V.toList r
+  show (Row r) = concatMap show $ V.toList r
 
 instance Show Piece where
   show piece = show $ withPieceUnsafe originPiece (emptyGrid 3 4)
@@ -74,7 +74,7 @@ withPieceUnsafe (Piece (c:cs) col) g = withPieceUnsafe (Piece cs col) (withCoord
 withCoordinateUnsafe :: Color -> Coordinate -> Grid -> Grid
 withCoordinateUnsafe col (Coordinate (x, y)) (Grid g)
   | y < 0 = Grid g
-  | y >= (V.length g) = Grid g
+  | y >= V.length g = Grid g
   | otherwise = Grid $ g V.// [(y, newRow)]
   where
     newRow = setXUnsafe col x (g V.! y) 
@@ -91,14 +91,14 @@ rowEmpty :: Row -> Bool
 rowEmpty (Row r) = all (== Empty) r
 
 rowFull :: Row -> Bool
-rowFull (Row r) = all (/= Empty) r
+rowFull (Row r) = Empty `notElem` r
 
 rowPopulated :: Row -> Bool
 rowPopulated = not . rowEmpty
 
 -- |Is the grid full?
 isGridComplete :: Grid -> Bool
-isGridComplete (Grid g) = or $ fmap rowPopulated $ V.drop 20 g
+isGridComplete (Grid g) = or $ rowPopulated <$> V.drop 20 g
 
 -- |Remove and replace any full rows.
 flushGrid :: Grid -> Grid
@@ -111,11 +111,11 @@ flushGrid (Grid g) = Grid $ withoutFullRows V.++ newEmptyRows
 
 -- |Count the number of gaps per row.
 rowGaps :: Row -> Int
-rowGaps (Row r) = length $ V.filter (\(a, b) -> a /= b) (V.zip r $ V.drop 1 r)
+rowGaps (Row r) = length $ V.filter (uncurry (/=)) (V.zip r $ V.drop 1 r)
 
 -- |Count the number of vertical gaps between two rows.
 verticalGaps2 :: (Row, Row) -> Int
-verticalGaps2 ((Row r1), (Row r2)) = length $ V.filter (\(a, b) -> a /= b) (V.zip r1 r2)
+verticalGaps2 (Row r1, Row r2) = length $ V.filter (uncurry (/=)) (V.zip r1 r2)
 
 -- |Count the number of vertical gaps in the grid
 verticalGaps :: Grid -> Int

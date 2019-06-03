@@ -23,7 +23,7 @@ instance Show Game where
   show game = intercalate "\n" $ zipWith (++) gameLines nextPieceLines
     where
       gameLines = splitOn "\n" $ show $ logicalGridUnsafe (displayGame game)
-      nextPieceLines = (splitOn "\n" $ show $ nextPiece game) ++ repeat ""
+      nextPieceLines = splitOn "\n" (show $ nextPiece game) ++ repeat ""
 
 -- |A game with the given random seed.
 gameWithSeed :: StdGen -> Game
@@ -42,7 +42,7 @@ logicalGridUnsafe game = withPieceUnsafe (game ^. piece) (game ^. grid)
 
 -- |Gets the game for display.
 displayGame :: Game -> Game
-displayGame game = withGhostPiece game
+displayGame = withGhostPiece
 
 -- |Gets a copy of the game with the ghost-piece placed.
 -- |Use for display only.
@@ -92,19 +92,18 @@ guardGame defaultGame game =
 
 -- |Move the current piece all the way down for ghost-piece purposes / drops.
 moveFullyDown :: Game -> Game
-moveFullyDown game = foldr (.) id (replicate 24 (move Down1)) $ game
+moveFullyDown = foldr (.) id (replicate 24 (move Down1))
 
 -- |Apply the given move to the game if possible.
 -- |If not possible, just returns the current game.
 move :: Move -> Game -> Game 
-move Left1 game = guardGame game $ game & piece %~ (movePiece (-1) 0)
-move Right1 game = guardGame game $ game & piece %~ (movePiece 1 0)
-move Down1 game = guardGame game $ game & piece %~ (movePiece 0 (-1))
+move Left1 game = guardGame game $ game & piece %~ movePiece (-1) 0
+move Right1 game = guardGame game $ game & piece %~ movePiece 1 0
+move Down1 game = guardGame game $ game & piece %~ movePiece 0 (-1)
 move Drop game = flushCompleted . fixPiece $ moveFullyDown game
 move RotateCW game = guardGame game $ game & piece %~ rotate CW
 move RotateCCW game = guardGame game $ game & piece %~ rotate CCW
 
 -- |Apply the given moves to the game in order.
 applyMoves :: [Move] -> Game -> Game
-applyMoves [] game = game
-applyMoves (m:ms) game = applyMoves ms $ move m game
+applyMoves ms game = foldl (flip move) game ms

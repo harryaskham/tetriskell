@@ -16,7 +16,7 @@ allMoves = nub movesWithDrops
     takeToN n = map take [0..n]
     sideMoves = (takeToN 5 <*> [repeat Left1]) ++ (takeToN 5 <*> [repeat Right1])
     rotations = (takeToN 2 <*> [repeat RotateCW]) ++ (takeToN 2 <*> [repeat RotateCCW])
-    movesWithRotations = (map (++) rotations) <*> sideMoves
+    movesWithRotations = map (++) rotations <*> sideMoves
     movesWithDrops = map (++ [Drop]) movesWithRotations
 
 -- |Apply moves with tracking.
@@ -28,7 +28,7 @@ applyMovesTracked moves game = (applyMoves moves game, moves)
 allFutures :: Game -> [(Game, [Move])]
 allFutures game = steppedGames
   where
-    allFutureGames = (map applyMovesTracked allMoves) <*> pure game
+    allFutureGames = map applyMovesTracked allMoves <*> pure game
     steppedGames = map (\(g, ms) -> (step g, ms)) allFutureGames
 
 -- |Cull futures by taking only the top N
@@ -59,18 +59,18 @@ extendFuturesN = foldr (>=>) return $ replicate lookahead (extendWithCulling cul
 bestFuture :: Game -> (Game, [Move])
 bestFuture game = minimumBy compareCost $ extendFuturesN (game, mempty)
   where
-    compareCost = (\(g1, _) (g2, _) -> compare (cost g1) (cost g2))
+    compareCost (g1, _) (g2, _) = compare (cost g1) (cost g2)
 
 -- |Gets the best set of moves up to the first Drop event.
 -- |This means that each move has the fullest context.
 bestDrop :: Game -> [Move]
-bestDrop game = takeWhile (\m -> m /= Drop) moves ++ [Drop]
+bestDrop game = takeWhile (/= Drop) moves ++ [Drop]
   where
     (_, moves) = bestFuture game
 
 -- |Assign a cost to a game.
 cost :: Game -> Int
 cost game = 0
-            + (2 ^ (lowestEmptyRow $ game ^. grid))
-            + (1 * (horizontalGaps $ game ^. grid))
-            + (2 * (verticalGaps $ game ^. grid))
+            + 2 ^ lowestEmptyRow (game ^. grid)
+            + 1 * horizontalGaps (game ^. grid)
+            + 2 * verticalGaps (game ^. grid)

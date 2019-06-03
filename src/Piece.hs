@@ -30,7 +30,7 @@ instance Show Color where
 data Piece = Piece [Coordinate] Color
 
 -- |A representation of a bounding box in (bottomLeft, topRight) form.
-data BoundingBox = BoundingBox (Coordinate, Coordinate) deriving (Show)
+newtype BoundingBox = BoundingBox (Coordinate, Coordinate) deriving (Show)
 
 -- |A line piece in the bottom-left.
 linePiece :: Piece
@@ -116,5 +116,5 @@ rotate rd p = undoNormalisation rotatedPieceAtOrigin undoC
     rotateCoordinate = case rd of
                          CW -> rotateCoordinateCw
                          CCW -> rotateCoordinateCcw
-    ((Piece cs col), undoC) = normaliseToOrigin p
-    rotatedPieceAtOrigin = (Piece (map rotateCoordinate cs) col)
+    (Piece cs col, undoC) = normaliseToOrigin p
+    rotatedPieceAtOrigin = Piece (map rotateCoordinate cs) col
