@@ -32,7 +32,7 @@ clear = putStr "\ESC[2J"
 printLoop :: MVar Game -> IO ()
 printLoop gameMv = do
   clear
-  withMVar gameMv (putStrLn . show)
+  withMVar gameMv print
   threadDelay fps60Delay
   printLoop gameMv
 
@@ -77,7 +77,7 @@ executeAgentMoves (m:ms) movesMv = do
 -- |Get the AI moves.
 getAgentMoves :: MVar Game -> MVar [Move] -> IO ()
 getAgentMoves gameMv movesMv = do
-  moves <- withMVar gameMv (\g -> return $ bestDrop g)
+  moves <- withMVar gameMv $ return . bestDrop
   --executeAgentMoves moves movesMv
   executeAgentMovesHack moves gameMv
   getAgentMoves gameMv movesMv
@@ -101,8 +101,8 @@ toMove ' ' = Just Drop
 toMove _ = Nothing
 
 -- |Generates the moveset for the cached input.
-toMoves :: [Char] -> [Move]
-toMoves = reverse . catMaybes . (map toMove)
+toMoves :: String -> [Move]
+toMoves = reverse . mapMaybe toMove
 
 defaultGame :: Game
 defaultGame = gameWithSeed $ mkStdGen 42
@@ -113,9 +113,9 @@ main = do
   seed <- getStdGen
   gameMv <- newMVar $ gameWithSeed seed
   movesMv <- newMVar []
-  forkIO $ do printLoop gameMv
-  -- forkIO $ do moveLoop gameMv movesMv
+  forkIO $ printLoop gameMv
+  -- forkIO $ moveLoop gameMv movesMv
   -- enable above to accept human input
-  forkIO $ do getMoves movesMv
-  forkIO $ do getAgentMoves gameMv movesMv
+  forkIO $ getMoves movesMv
+  forkIO $ getAgentMoves gameMv movesMv
   gameLoop gameMv
