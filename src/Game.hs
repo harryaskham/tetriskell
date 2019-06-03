@@ -12,7 +12,7 @@ import Control.Lens hiding (Empty)
 import System.Random
 
 -- |The representation of the game state.
-data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: StdGen }
+data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: StdGen, _score :: Int }
 
 -- |The possible moves at any given time.
 data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop deriving (Show, Bounded, Enum, Eq)
@@ -20,14 +20,15 @@ data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop deriving (Show,
 makeLenses ''Game
 
 instance Show Game where
-  show game = intercalate "\n" $ zipWith (++) gameLines nextPieceLines
+  show game = intercalate "\n" $ scoreLine : zipWith (++) gameLines nextPieceLines
     where
       gameLines = splitOn "\n" $ show $ logicalGridUnsafe (displayGame game)
       nextPieceLines = map (' ':) $ ["nxt"] ++ splitOn "\n" (show $ nextPiece game) ++ repeat ""
+      scoreLine = "score: " ++ show (game ^. score)
 
 -- |A game with the given random seed.
 gameWithSeed :: StdGen -> Game
-gameWithSeed seed = Game {_grid=defaultGrid, _piece=p, _pieceGen=g}
+gameWithSeed seed = Game {_grid=defaultGrid, _piece=p, _pieceGen=g, _score=0}
   where
     (p, g) = randomPieceAtTop seed
 
@@ -63,13 +64,16 @@ nextPiece game = piece
 
 -- |Fixes the current piece where it is and generates a new one.
 fixPiece :: Game -> Game
-fixPiece game = Game {_grid=logicalGridUnsafe game, _piece=p, _pieceGen=g}
+fixPiece game = Game {_grid=logicalGridUnsafe game, _piece=p, _pieceGen=g, _score=game ^. score}
   where
     (p, g) = randomPieceAtTop $ game ^. pieceGen
 
--- |Remove any completed rows.
+-- |Remove any completed rows, updating the score.
 flushCompleted :: Game -> Game
-flushCompleted game = game & grid %~ flushGrid
+flushCompleted game = flushed & score %~ (+linesCleared)
+  where
+    flushed = game & grid %~ flushGrid
+    linesCleared = numPopulatedRows (game ^. grid) - numPopulatedRows (flushed ^. grid)
 
 -- |Steps the game forward by dropping the current piece.
 -- |If it can't move, we fix the piece.

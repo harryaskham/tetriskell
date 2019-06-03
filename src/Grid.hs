@@ -128,3 +128,7 @@ horizontalGaps (Grid g) = sum $ fmap rowGaps g
 -- |Get the index of the first row that has no contents.
 lowestEmptyRow :: Grid -> Int
 lowestEmptyRow (Grid g) = fromMaybe 0 $ V.findIndex (== True) (fmap rowEmpty g)
+
+-- |Gets the number of rows with at least one block.
+numPopulatedRows :: Grid -> Int
+numPopulatedRows (Grid g) = V.length . V.filter rowPopulated $ g
