@@ -12,7 +12,7 @@ import Control.Lens hiding (Empty)
 import System.Random
 
 -- |The representation of the game state.
-data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: StdGen}
+data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: StdGen }
 
 -- |The possible moves at any given time.
 data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop deriving (Show, Bounded, Enum, Eq)
@@ -20,10 +20,10 @@ data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop deriving (Show,
 makeLenses ''Game
 
 instance Show Game where
-  show game = intercalate "\n" $ zipWith (++) gameStr nextPieceStr
+  show game = intercalate "\n" $ zipWith (++) gameLines nextPieceLines
     where
-      gameStr = splitOn "\n" $ show $ logicalGridUnsafe (displayGame game)
-      nextPieceStr = (splitOn "\n" $ show $ nextPiece game) ++ repeat []
+      gameLines = splitOn "\n" $ show $ logicalGridUnsafe (displayGame game)
+      nextPieceLines = (splitOn "\n" $ show $ nextPiece game) ++ repeat ""
 
 -- |A game with the given random seed.
 gameWithSeed :: StdGen -> Game
