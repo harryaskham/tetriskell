@@ -16,7 +16,6 @@ import System.Random
 -- Agent assesses drops with extra moves at the end e.g. L, R or rotation to slot into gaps
 -- Speed linked to level & score
 -- Rotation correction, not blocking, better l-piece rotation
--- Piece hold
 
 speedMod = 0.2  -- higher is slower; too low and you hit the decision timeout threshold
 agentMoveDelay = round $ speedMod * 25000
@@ -114,7 +113,7 @@ main = do
   gameMv <- newMVar $ gameWithSeed seed
   movesMv <- newMVar []
   forkIO $ printLoop gameMv
-  forkIO $ moveLoop gameMv movesMv
-  forkIO $ getMoves movesMv
-  --forkIO $ getAgentMoves gameMv movesMv
+  -- forkIO $ moveLoop gameMv movesMv
+  -- forkIO $ getMoves movesMv
+  forkIO $ getAgentMoves gameMv movesMv
   gameLoop gameMv

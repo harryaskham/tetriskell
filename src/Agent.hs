@@ -13,13 +13,14 @@ import Grid
 
 -- |Generates the moves that will generate all possible dropsites.
 allMoves :: [[Move]]
-allMoves = nub movesWithDrops
+allMoves = nub movesWithHolds
   where
     takeToN n = map take [0..n]
     sideMoves = (takeToN 5 <*> [repeat Left1]) ++ (takeToN 5 <*> [repeat Right1])
     rotations = (takeToN 2 <*> [repeat RotateCW]) ++ (takeToN 2 <*> [repeat RotateCCW])
     movesWithRotations = map (++) rotations <*> sideMoves
     movesWithDrops = map (++ [Drop]) movesWithRotations
+    movesWithHolds = movesWithDrops ++ map (Hold:) movesWithDrops -- Will now consider all pathways that include a single hold.
 
 -- |Apply moves with tracking.
 applyMovesTracked :: [Move] -> Game -> (Game, [Move])
