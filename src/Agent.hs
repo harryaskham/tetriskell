@@ -3,8 +3,10 @@ module Agent where
 import System.Random
 import Data.List
 import Control.Lens
+import Control.Applicative
 import Control.Monad
 import Data.Maybe
+import Control.Parallel.Strategies
 
 import Game
 import Grid
@@ -28,15 +30,22 @@ applyMovesTracked moves game = (applyMoves moves game, moves)
 allFutures :: Game -> [(Game, [Move])]
 allFutures game = steppedGames
   where
-    allFutureGames = map applyMovesTracked allMoves <*> pure game
+    allFutureGames = pure game <**> map applyMovesTracked allMoves
     steppedGames = map (\(g, ms) -> (step g, ms)) allFutureGames
 
 -- |Cull futures by taking only the top N
 cullFutures :: Int -> [(Game, [Move])] -> [(Game, [Move])]
 cullFutures n futures = map (\(g, ms, _) -> (g, ms)) $ take n sortedFutures
   where
-    costedFutures = map (\(g, ms) -> (g, ms, cost g)) futures
-    sortedFutures = sortBy (\(_, _, c1) (_, _, c2) -> compare c1 c2) costedFutures
+    sortedFutures = sortBy (\(_, _, c1) (_, _, c2) -> compare c1 c2) $ costedFuturesPar futures
+
+-- |Calculate the cost of each future.
+costedFutures :: [(Game, [Move])] -> [(Game, [Move], Int)]
+costedFutures = map (\(g, ms) -> (g, ms, cost g))
+
+-- |Calculate the cost of each future.
+costedFuturesPar :: [(Game, [Move])] -> [(Game, [Move], Int)]
+costedFuturesPar = parMap rseq (\(g, ms) -> (g, ms, cost g))
 
 -- |Takes a future game and its moves, and looks one step into the future from there.
 -- |Ensures the move-chain is retained.

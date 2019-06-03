@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7e270a97cc6838e85ae4d309593d689a6560d929f88234e45ea0025c07c0de4a
+-- hash: 9fa2d593d6408c3c73ba9bdc531814909ac060d76248b45edd6d4305d7991023
 
 name:           tetriskell
 version:        0.1.0.0
@@ -38,6 +38,7 @@ library
       base >=4.7 && <5
     , hidden-char
     , lens
+    , parallel
     , random
     , split
     , vector
@@ -54,6 +55,7 @@ executable tetriskell-exe
       base >=4.7 && <5
     , hidden-char
     , lens
+    , parallel
     , random
     , split
     , tetriskell

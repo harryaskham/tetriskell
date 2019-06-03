@@ -20,11 +20,12 @@ data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop deriving (Show,
 makeLenses ''Game
 
 instance Show Game where
-  show game = intercalate "\n" $ scoreLine : zipWith (++) gameLines nextPieceLines
+  show game = intercalate "\n" allLines
     where
       gameLines = splitOn "\n" $ show $ logicalGridUnsafe (displayGame game)
       nextPieceLines = map (' ':) $ ["nxt"] ++ splitOn "\n" (show $ nextPiece game) ++ repeat ""
       scoreLine = "score: " ++ show (game ^. score)
+      allLines = scoreLine : zipWith (++) gameLines nextPieceLines
 
 -- |A game with the given random seed.
 gameWithSeed :: StdGen -> Game

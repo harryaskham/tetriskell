@@ -14,7 +14,6 @@ import System.Random
 -- Piece preview on RHS, piece hold on LHS
 -- Tracker for num lines to eval agents
 -- Agent assesses drops with extra moves at the end e.g. L, R or rotation to slot into gaps
--- Scoring
 -- Speed linked to level & score
 -- Rotation correction, not blocking, better l-piece rotation
 -- Piece hold

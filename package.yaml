@@ -25,6 +25,7 @@ dependencies:
 - random
 - vector
 - split
+- parallel
 
 library:
   source-dirs: src
