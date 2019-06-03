@@ -7,6 +7,7 @@ import Piece
 import Grid
 
 import Data.List
+import Data.List.Split
 import Control.Lens hiding (Empty)
 import System.Random
 
@@ -19,7 +20,10 @@ data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop deriving (Show,
 makeLenses ''Game
 
 instance Show Game where
-  show game = (show $ nextPiece game) ++ "\n" ++ (show $ logicalGridUnsafe (displayGame game))
+  show game = intercalate "\n" $ zipWith (++) gameStr nextPieceStr
+    where
+      gameStr = splitOn "\n" $ show $ logicalGridUnsafe (displayGame game)
+      nextPieceStr = (splitOn "\n" $ show $ nextPiece game) ++ repeat []
 
 -- |A game with the given random seed.
 gameWithSeed :: StdGen -> Game

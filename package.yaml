@@ -24,6 +24,7 @@ dependencies:
 - hidden-char
 - random
 - vector
+- split
 
 library:
   source-dirs: src
