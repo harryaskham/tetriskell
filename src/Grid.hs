@@ -24,7 +24,7 @@ instance Show Row where
 instance Show Piece where
   show piece = show $ withPieceUnsafe originPiece (emptyGrid 3 4)
     where
-      (originPiece, _) = normaliseToOrigin piece
+      originPiece = fst $ normaliseToOrigin piece
 
 -- |Creates an empty row.
 emptyRow :: Int -> Row

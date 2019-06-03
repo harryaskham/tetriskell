@@ -23,7 +23,7 @@ instance Show Game where
   show game = intercalate "\n" $ zipWith (++) gameLines nextPieceLines
     where
       gameLines = splitOn "\n" $ show $ logicalGridUnsafe (displayGame game)
-      nextPieceLines = splitOn "\n" (show $ nextPiece game) ++ repeat ""
+      nextPieceLines = map (' ':) $ ["nxt"] ++ splitOn "\n" (show $ nextPiece game) ++ repeat ""
 
 -- |A game with the given random seed.
 gameWithSeed :: StdGen -> Game

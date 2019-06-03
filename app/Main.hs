@@ -22,7 +22,7 @@ import System.Random
 speedMod = 0.2  -- higher is slower; too low and you hit the decision timeout threshold
 agentMoveDelay = round $ speedMod * 25000
 fps60Delay = 16666
-stepDelay = round $ speedMod * 100000
+stepDelay = round $ speedMod * 1000000
 
 -- |Clear the terminal screen.
 clear :: IO ()
