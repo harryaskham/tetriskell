@@ -97,6 +97,7 @@ toMove 'k' = Just Down1
 toMove 'i' = Just RotateCCW
 toMove 'u' = Just RotateCW
 toMove ' ' = Just Drop
+toMove 'h' = Just Hold
 toMove _ = Nothing
 
 -- |Generates the moveset for the cached input.
@@ -113,8 +114,7 @@ main = do
   gameMv <- newMVar $ gameWithSeed seed
   movesMv <- newMVar []
   forkIO $ printLoop gameMv
-  -- forkIO $ moveLoop gameMv movesMv
-  -- enable above to accept human input
+  forkIO $ moveLoop gameMv movesMv
   forkIO $ getMoves movesMv
-  forkIO $ getAgentMoves gameMv movesMv
+  --forkIO $ getAgentMoves gameMv movesMv
   gameLoop gameMv

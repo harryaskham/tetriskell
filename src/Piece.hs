@@ -60,13 +60,21 @@ lPiece = Piece [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordin
 rPiece :: Piece
 rPiece = Piece [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordinate (1, 2)] DBlue
 
+-- |An empty piece.
+emptyPiece :: Piece
+emptyPiece = Piece [] Black
+
 -- |Makes the piece black.
 makeBlack :: Piece -> Piece
 makeBlack (Piece cs _) = Piece cs Black
 
+-- |Moves the given piece to the top.
+pieceAtTop :: Piece -> Piece
+pieceAtTop = movePiece 4 20 . fst . normaliseToOrigin
+
 -- |A generator for pieces appearing in the top-middle.
 allPiecesAtTop :: [Piece]
-allPiecesAtTop = map (movePiece 4 20) $ cycle [rPiece, lPiece, linePiece, sPiece, squarePiece, zPiece, tPiece]
+allPiecesAtTop = map pieceAtTop $ cycle [rPiece, lPiece, linePiece, sPiece, squarePiece, zPiece, tPiece]
 
 -- |Gets a random piece at the top of the board.
 randomPieceAtTop :: RandomGen g => g -> (Piece, g)

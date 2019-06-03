@@ -8,14 +8,15 @@ import Grid
 
 import Data.List
 import Data.List.Split
+import Data.Maybe
 import Control.Lens hiding (Empty)
 import System.Random
 
 -- |The representation of the game state.
-data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: StdGen, _score :: Int }
+data Game = Game { _grid :: Grid, _piece :: Piece, _pieceGen :: StdGen, _score :: Int, _heldPiece :: Maybe Piece }
 
 -- |The possible moves at any given time.
-data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop deriving (Show, Bounded, Enum, Eq)
+data Move = Left1 | Right1 | RotateCW | RotateCCW | Down1 | Drop | Hold deriving (Show, Bounded, Enum, Eq)
 
 makeLenses ''Game
 
@@ -23,13 +24,18 @@ instance Show Game where
   show game = intercalate "\n" allLines
     where
       gameLines = splitOn "\n" $ show $ logicalGridUnsafe (displayGame game)
-      nextPieceLines = map (' ':) $ ["nxt"] ++ splitOn "\n" (show $ nextPiece game) ++ repeat ""
+      nextPieceLines = linesForPiece (Just $ nextPiece game) "next"
+      heldPieceLines = linesForPiece (game ^. heldPiece) "held"
       scoreLine = "score: " ++ show (game ^. score)
-      allLines = scoreLine : zipWith (++) gameLines nextPieceLines
+      allLines = scoreLine : "\n" : zipWith (++) gameLines (nextPieceLines ++ [""] ++ heldPieceLines ++ repeat "")
+
+-- |Get the display lines for a given piece on the RHS of the grid.
+linesForPiece :: Maybe Piece -> String -> [String]
+linesForPiece piece header = map (' ':) $ splitOn "\n" (show $ fromMaybe emptyPiece piece) ++ [header]
 
 -- |A game with the given random seed.
 gameWithSeed :: StdGen -> Game
-gameWithSeed seed = Game {_grid=defaultGrid, _piece=p, _pieceGen=g, _score=0}
+gameWithSeed seed = Game {_grid=defaultGrid, _piece=p, _pieceGen=g, _score=0, _heldPiece=Nothing}
   where
     (p, g) = randomPieceAtTop seed
 
@@ -65,7 +71,11 @@ nextPiece game = piece
 
 -- |Fixes the current piece where it is and generates a new one.
 fixPiece :: Game -> Game
-fixPiece game = Game {_grid=logicalGridUnsafe game, _piece=p, _pieceGen=g, _score=game ^. score}
+fixPiece game = withNextPiece game & grid .~ logicalGridUnsafe game
+
+-- |Abandons the current piece and gets the next one.
+withNextPiece :: Game -> Game
+withNextPiece game = Game {_grid=game ^. grid, _piece=p, _pieceGen=g, _score=game ^. score, _heldPiece=game ^. heldPiece}
   where
     (p, g) = randomPieceAtTop $ game ^. pieceGen
 
@@ -108,6 +118,11 @@ move Down1 game = guardGame game $ game & piece %~ movePiece 0 (-1)
 move Drop game = flushCompleted . fixPiece $ moveFullyDown game
 move RotateCW game = guardGame game $ game & piece %~ rotate CW
 move RotateCCW game = guardGame game $ game & piece %~ rotate CCW
+move Hold game =
+  let pieceToHold = pieceAtTop $ game ^. piece in
+    case game ^. heldPiece of
+      Just held -> (game & piece .~ held) & heldPiece ?~ pieceToHold
+      Nothing -> withNextPiece game & heldPiece ?~ pieceToHold
 
 -- |Apply the given moves to the game in order.
 applyMoves :: [Move] -> Game -> Game
