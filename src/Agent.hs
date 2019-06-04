@@ -80,8 +80,8 @@ bestDrop game = takeWhile (/= Drop) moves ++ [Drop]
 
 -- |Modulate to change policies.
 cost :: Game -> Int
--- cost = costA
-cost = costB
+cost = costA
+-- cost = costB
 
 -- |Assign a cost to a game. Plays basically perfect, but one row at a time.
 costA :: Game -> Int
