@@ -152,6 +152,6 @@ isTunnel (Grid g) (Coordinate (x, y)) = threeEmpty && surrounded
     (Row row2) = g V.! (y+2)
     threeEmpty = all (== Empty) [row0 V.! x, row1 V.! x, row2 V.! x]
     surroundedBelow = (y == 0) || rowBelow V.! x /= Empty
-    surroundedLeft = Empty `notElem` [row0 V.! (x-1), row1 V.! (x-1), row2 V.! (x-2)]
-    surroundedRight = Empty `notElem` [row0 V.! (x+1), row1 V.! (x+1), row2 V.! (x+2)]
+    surroundedLeft = (x <= 0) || Empty `notElem` [row0 V.! (x-1), row1 V.! (x-1), row2 V.! (x-2)]
+    surroundedRight = (x >= length row0 - 1) || Empty `notElem` [row0 V.! (x+1), row1 V.! (x+1), row2 V.! (x+2)]
     surrounded = surroundedBelow && surroundedLeft && surroundedRight
