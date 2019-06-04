@@ -77,7 +77,7 @@ bestFuture game = minimumBy compareCost $ extendFuturesN (game, mempty)
 bestDrop :: Game -> [Move]
 bestDrop game = takeWhile (/= Drop) moves ++ [Drop]
   where
-    (_, moves) = bestFuture game
+    moves = snd $ bestFuture game
 
 -- |Modulate to change policies.
 cost :: Game -> Int
