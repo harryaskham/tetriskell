@@ -66,6 +66,7 @@ extendFuturesN = foldr (>=>) return $ replicate lookahead (extendWithCulling cul
     culling = 3  -- The top N paths to consider
 
 -- |Gets the best future and the moves that got us there.
+-- |TODO: Potentially cost up via parallel.
 bestFuture :: Game -> (Game, [Move])
 bestFuture game = minimumBy compareCost $ extendFuturesN (game, mempty)
   where
