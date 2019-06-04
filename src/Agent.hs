@@ -11,7 +11,7 @@ import Control.Parallel.Strategies
 import Game
 import Grid
 
--- |Generates the moves that will generate all possible dropsites.
+-- |Generates the moves that will generate all possible dropsites, incl. holds.
 allMoves :: [[Move]]
 allMoves = nub movesWithHolds
   where
@@ -20,7 +20,7 @@ allMoves = nub movesWithHolds
     rotations = (takeToN 2 <*> [repeat RotateCW]) ++ (takeToN 2 <*> [repeat RotateCCW])
     movesWithRotations = map (++) rotations <*> sideMoves
     movesWithDrops = map (++ [Drop]) movesWithRotations
-    movesWithHolds = movesWithDrops ++ map (Hold:) movesWithDrops -- Will now consider all pathways that include a single hold.
+    movesWithHolds = movesWithDrops ++ map (Hold:) movesWithDrops
 
 -- |Apply moves with tracking.
 applyMovesTracked :: [Move] -> Game -> (Game, [Move])
@@ -78,9 +78,22 @@ bestDrop game = takeWhile (/= Drop) moves ++ [Drop]
   where
     (_, moves) = bestFuture game
 
--- |Assign a cost to a game.
+-- |Modulate to change policies.
 cost :: Game -> Int
-cost game = 0
+-- cost = costA
+cost = costB
+
+-- |Assign a cost to a game. Plays basically perfect, but one row at a time.
+costA :: Game -> Int
+costA game = 0
             + 2 ^ lowestEmptyRow (game ^. grid)
             + 1 * horizontalGaps (game ^. grid)
             + 2 * verticalGaps (game ^. grid)
+
+-- |Plays aesthetically with gaps, but avoids tunnels.
+costB :: Game -> Int
+costB game = 0
+            + 3 ^ lowestEmptyRow (game ^. grid)
+            + 2 * horizontalGaps (game ^. grid)
+            + 2 ^ verticalGaps (game ^. grid)
+            + 2 ^ numTunnels (game ^. grid)

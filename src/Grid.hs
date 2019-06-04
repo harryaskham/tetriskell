@@ -132,3 +132,26 @@ lowestEmptyRow (Grid g) = fromMaybe 0 $ V.findIndex (== True) (fmap rowEmpty g)
 -- |Gets the number of rows with at least one block.
 numPopulatedRows :: Grid -> Int
 numPopulatedRows (Grid g) = V.length . V.filter rowPopulated $ g
+
+-- |Count the number of 3+ tunnels that exist. These are bad.
+numTunnels :: Grid -> Int
+numTunnels grid = length . filter (isTunnel grid) $ bottomCoords
+  where
+    bottomCoords = [Coordinate (x, y) | x <- [0..9], y <- [0..16]]
+
+-- |True iff this coordinate is the bottom of a tunnel.
+-- |We have to be empty, plus the next two squares up.
+-- |Then, here and 3 squares up, left and right need to be occupied, as does below.
+-- |Occupation can occur either by non-empty or by bounds.
+isTunnel :: Grid -> Coordinate -> Bool
+isTunnel (Grid g) (Coordinate (x, y)) = threeEmpty && surrounded
+  where
+    (Row rowBelow) = g V.! (y-1)
+    (Row row0) = g V.! y
+    (Row row1) = g V.! (y+1)
+    (Row row2) = g V.! (y+2)
+    threeEmpty = all (== Empty) [row0 V.! x, row1 V.! x, row2 V.! x]
+    surroundedBelow = (y == 0) || rowBelow V.! x /= Empty
+    surroundedLeft = Empty `notElem` [row0 V.! (x-1), row1 V.! (x-1), row2 V.! (x-2)]
+    surroundedRight = Empty `notElem` [row0 V.! (x+1), row1 V.! (x+1), row2 V.! (x+2)]
+    surrounded = surroundedBelow && surroundedLeft && surroundedRight

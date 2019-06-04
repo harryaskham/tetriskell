@@ -27,7 +27,7 @@ instance Show Game where
       nextPieceLines = linesForPiece (Just $ nextPiece game) "next"
       heldPieceLines = linesForPiece (game ^. heldPiece) "held"
       scoreLine = "lines: " ++ show (game ^. score)
-      allLines = scoreLine : "\n" : zipWith (++) gameLines (nextPieceLines ++ [""] ++ heldPieceLines ++ repeat "")
+      allLines = scoreLine : zipWith (++) gameLines (nextPieceLines ++ [""] ++ heldPieceLines ++ repeat "")
 
 -- |Get the display lines for a given piece on the RHS of the grid.
 linesForPiece :: Maybe Piece -> String -> [String]
