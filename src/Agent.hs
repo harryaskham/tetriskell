@@ -2,6 +2,7 @@ module Agent where
 
 import System.Random
 import Data.List
+import Data.Tuple.HT
 import Control.Lens
 import Control.Applicative
 import Control.Monad
@@ -35,13 +36,15 @@ allFutures :: Game -> [(Game, [Move])]
 allFutures game = steppedGames
   where
     allFutureGames = applyMovesTracked <$> allMoves <*> pure game
-    steppedGames = map (\(g, ms) -> (step g, ms)) allFutureGames
+    steppedGames = mapFst step <$> allFutureGames
 
 -- |Cull futures by taking only the top N
 cullFutures :: Int -> [(Game, [Move])] -> [(Game, [Move])]
-cullFutures n futures = map (\(g, ms, _) -> (g, ms)) $ take n sortedFutures
+cullFutures n futures = (\(g, ms, _) -> (g, ms)) <$> culledCostedFutures
   where
-    sortedFutures = sortBy (\(_, _, c1) (_, _, c2) -> compare c1 c2) $ costedFuturesPar futures
+    sortByCost = sortBy (\(_, _, c1) (_, _, c2) -> compare c1 c2)
+    sortedFutures = sortByCost $ costedFuturesPar futures
+    culledCostedFutures = take n sortedFutures
 
 -- |Calculate the cost of each future.
 costedFutures :: [(Game, [Move])] -> [(Game, [Move], Int)]
@@ -54,7 +57,7 @@ costedFuturesPar = parMap rseq (\(g, ms) -> (g, ms, cost g))
 -- |Takes a future game and its moves, and looks one step into the future from there.
 -- |Ensures the move-chain is retained.
 extendFutures :: (Game, [Move]) -> [(Game, [Move])]
-extendFutures (game, origMoves) = map (\(g, newMoves) -> (g, origMoves ++ newMoves)) $ allFutures game
+extendFutures (game, origMoves) = mapSnd (origMoves++) <$> allFutures game
 
 -- |Extends the future-list with culling.
 extendWithCulling :: Int -> (Game, [Move]) -> [(Game, [Move])]
@@ -69,7 +72,6 @@ extendFuturesN = foldr (>=>) return $ replicate lookahead (extendWithCulling cul
     culling = 3  -- The top N paths to consider
 
 -- |Gets the best future and the moves that got us there.
--- |TODO: Potentially cost up via parallel.
 bestFuture :: Game -> (Game, [Move])
 bestFuture game = minimumBy compareCost $ extendFuturesN (game, mempty)
   where

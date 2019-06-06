@@ -26,6 +26,7 @@ dependencies:
 - vector
 - split
 - parallel
+- utility-ht
 
 library:
   source-dirs: src
