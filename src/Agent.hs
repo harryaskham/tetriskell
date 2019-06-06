@@ -15,12 +15,12 @@ import Grid
 allMoves :: [[Move]]
 allMoves = nub movesWithHolds
   where
-    takeToN n = map take [0..n]
+    takeToN n = take <$> [0..n]
     sideMoves = (takeToN 5 <*> [repeat Left1]) ++ (takeToN 5 <*> [repeat Right1])
     rotations = (takeToN 2 <*> [repeat RotateCW]) ++ (takeToN 2 <*> [repeat RotateCCW])
-    movesWithRotations = map (++) rotations <*> sideMoves
-    movesWithDrops = map (++ [Drop]) movesWithRotations
-    movesWithHolds = movesWithDrops ++ map (Hold:) movesWithDrops
+    movesWithRotations = (++) <$> rotations <*> sideMoves
+    movesWithDrops = (++ [Drop]) <$> movesWithRotations
+    movesWithHolds = movesWithDrops ++ ((Hold:) <$> movesWithDrops)
 
 -- |Apply moves with tracking.
 applyMovesTracked :: [Move] -> Game -> (Game, [Move])
@@ -31,7 +31,7 @@ applyMovesTracked moves game = (applyMoves moves game, moves)
 allFutures :: Game -> [(Game, [Move])]
 allFutures game = steppedGames
   where
-    allFutureGames = pure game <**> map applyMovesTracked allMoves
+    allFutureGames = applyMovesTracked <$> allMoves <*> pure game
     steppedGames = map (\(g, ms) -> (step g, ms)) allFutureGames
 
 -- |Cull futures by taking only the top N
