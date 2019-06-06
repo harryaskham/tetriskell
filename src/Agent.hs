@@ -11,13 +11,16 @@ import Control.Parallel.Strategies
 import Game
 import Grid
 
+-- |Generates all sublists of repetition of the given item.
+repeatToN :: Int -> a -> [[a]]
+repeatToN n a = replicate <$> [0..n] ?? a
+
 -- |Generates the moves that will generate all possible dropsites, incl. holds.
 allMoves :: [[Move]]
 allMoves = nub movesWithHolds
   where
-    takeToN n = take <$> [0..n]
-    sideMoves = (takeToN 5 <*> [repeat Left1]) ++ (takeToN 5 <*> [repeat Right1])
-    rotations = (takeToN 2 <*> [repeat RotateCW]) ++ (takeToN 2 <*> [repeat RotateCCW])
+    sideMoves = repeatToN 5 Left1 ++ repeatToN 5 Right1
+    rotations = repeatToN 2 RotateCW ++ repeatToN 2 RotateCCW
     movesWithRotations = (++) <$> rotations <*> sideMoves
     movesWithDrops = (++ [Drop]) <$> movesWithRotations
     movesWithHolds = movesWithDrops ++ ((Hold:) <$> movesWithDrops)
