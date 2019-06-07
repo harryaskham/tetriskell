@@ -5,15 +5,16 @@ import System.Random
 import Coordinate
 
 -- |Representation of piece color.
-data Color = Black
-           | Red 
-           | DBlue
-           | LBlue
-           | Yellow
-           | Green
-           | Purple
-           | Orange
-           deriving (Eq)
+data Color
+  = Black
+  | Red
+  | DBlue
+  | LBlue
+  | Yellow
+  | Green
+  | Purple
+  | Orange
+  deriving (Eq)
 
 instance Show Color where
   show Black = "\x1b[30m"
@@ -27,38 +28,62 @@ instance Show Color where
 
 -- |A generic representation of a Tetromino
 -- |TODO: Probably more nicely represented as a Record to avoid all the pattern matching for colors.
-data Piece = Piece [Coordinate] Color
+data Piece =
+  Piece [Coordinate] Color
 
 -- |A representation of a bounding box in (bottomLeft, topRight) form.
-newtype BoundingBox = BoundingBox (Coordinate, Coordinate) deriving (Show)
+newtype BoundingBox =
+  BoundingBox (Coordinate, Coordinate)
+  deriving (Show)
 
 -- |A line piece in the bottom-left.
 linePiece :: Piece
-linePiece = Piece [Coordinate (0, 0), Coordinate (0, 1), Coordinate (0, 2), Coordinate (0, 3)] LBlue
+linePiece =
+  Piece
+    [Coordinate (0, 0), Coordinate (0, 1), Coordinate (0, 2), Coordinate (0, 3)]
+    LBlue
 
 -- |A T piece in the bottom-left.
 tPiece :: Piece
-tPiece = Piece [Coordinate (0, 0), Coordinate (1, 0), Coordinate (2, 0), Coordinate (1, 1)] Purple
+tPiece =
+  Piece
+    [Coordinate (0, 0), Coordinate (1, 0), Coordinate (2, 0), Coordinate (1, 1)]
+    Purple
 
 -- |A square piece in the bottom-left.
 squarePiece :: Piece
-squarePiece = Piece [Coordinate (0, 0), Coordinate (1, 0), Coordinate (0, 1), Coordinate (1, 1)] Yellow
+squarePiece =
+  Piece
+    [Coordinate (0, 0), Coordinate (1, 0), Coordinate (0, 1), Coordinate (1, 1)]
+    Yellow
 
 -- |An S piece in the bottom-left.
 sPiece :: Piece
-sPiece = Piece [Coordinate (0, 0), Coordinate (1, 0), Coordinate (1, 1), Coordinate (2, 1)] Green
+sPiece =
+  Piece
+    [Coordinate (0, 0), Coordinate (1, 0), Coordinate (1, 1), Coordinate (2, 1)]
+    Green
 
 -- |A Z piece in the bottom-left.
 zPiece :: Piece
-zPiece = Piece [Coordinate (0, 1), Coordinate (1, 1), Coordinate (1, 0), Coordinate (2, 0)] Red
+zPiece =
+  Piece
+    [Coordinate (0, 1), Coordinate (1, 1), Coordinate (1, 0), Coordinate (2, 0)]
+    Red
 
 -- |An L piece in the bottom-left.
 lPiece :: Piece
-lPiece = Piece [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordinate (1, 0)] Orange
+lPiece =
+  Piece
+    [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordinate (1, 0)]
+    Orange
 
 -- |An R piece in the bottom-left.
 rPiece :: Piece
-rPiece = Piece [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordinate (1, 2)] DBlue
+rPiece =
+  Piece
+    [Coordinate (0, 2), Coordinate (0, 1), Coordinate (0, 0), Coordinate (1, 2)]
+    DBlue
 
 -- |An empty piece.
 emptyPiece :: Piece
@@ -74,7 +99,9 @@ pieceAtTop = movePiece 4 20 . fst . normaliseToOrigin
 
 -- |A generator for pieces appearing in the top-middle.
 allPiecesAtTop :: [Piece]
-allPiecesAtTop = map pieceAtTop $ cycle [rPiece, lPiece, linePiece, sPiece, squarePiece, zPiece, tPiece]
+allPiecesAtTop =
+  map pieceAtTop $
+  cycle [rPiece, lPiece, linePiece, sPiece, squarePiece, zPiece, tPiece]
 
 -- |Gets a random piece at the top of the board.
 randomPieceAtTop :: RandomGen g => g -> (Piece, g)
@@ -89,7 +116,9 @@ movePiece x y (Piece cs col) = Piece (map (moveCoordinate x y) cs) col
 
 -- |Gets bounding box for the given piece represented as (bottom-left, top-right).
 boundingBox :: Piece -> BoundingBox
-boundingBox (Piece cs _) = BoundingBox (Coordinate (leftMost, bottomMost), Coordinate (rightMost, topMost))
+boundingBox (Piece cs _) =
+  BoundingBox
+    (Coordinate (leftMost, bottomMost), Coordinate (rightMost, topMost))
   where
     leftMost = minimum $ map (\(Coordinate c) -> fst c) cs
     bottomMost = minimum $ map (\(Coordinate c) -> snd c) cs
@@ -99,7 +128,8 @@ boundingBox (Piece cs _) = BoundingBox (Coordinate (leftMost, bottomMost), Coord
 -- |Move the piece to the origin and return the coordinate its bottom-left
 -- |bounding box should take.
 normaliseToOrigin :: Piece -> (Piece, Coordinate)
-normaliseToOrigin p = (movePiece (-leftMost) (-bottomMost) p, Coordinate (leftMost, bottomMost))
+normaliseToOrigin p =
+  (movePiece (-leftMost) (-bottomMost) p, Coordinate (leftMost, bottomMost))
   where
     BoundingBox (Coordinate (leftMost, bottomMost), _) = boundingBox p
 
@@ -107,12 +137,15 @@ normaliseToOrigin p = (movePiece (-leftMost) (-bottomMost) p, Coordinate (leftMo
 -- |First pushes the piece to the origin then undoes it.
 -- |Means that the bounding box ends up in the same bottom-left.
 undoNormalisation :: Piece -> Coordinate -> Piece
-undoNormalisation p (Coordinate (x, y)) = movePiece (x - leftMost) (y - bottomMost) p
+undoNormalisation p (Coordinate (x, y)) =
+  movePiece (x - leftMost) (y - bottomMost) p
   where
     (BoundingBox (Coordinate (leftMost, bottomMost), _)) = boundingBox p
 
 -- |The direction of rotation.
-data RotationDirection = CW | CCW
+data RotationDirection
+  = CW
+  | CCW
 
 -- |Rotates a piece CW by rotating its bounding box.
 -- |Does no validation; will need to be fixed in the context of the game.
@@ -121,8 +154,9 @@ data RotationDirection = CW | CCW
 rotate :: RotationDirection -> Piece -> Piece
 rotate rd p = undoNormalisation rotatedPieceAtOrigin undoC
   where
-    rotateCoordinate = case rd of
-                         CW -> rotateCoordinateCw
-                         CCW -> rotateCoordinateCcw
+    rotateCoordinate =
+      case rd of
+        CW -> rotateCoordinateCw
+        CCW -> rotateCoordinateCcw
     (Piece cs col, undoC) = normaliseToOrigin p
     rotatedPieceAtOrigin = Piece (map rotateCoordinate cs) col

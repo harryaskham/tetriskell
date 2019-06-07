@@ -1,20 +1,20 @@
 module Agent where
 
-import System.Random
-import Data.List
-import Data.Tuple.HT
-import Control.Lens
 import Control.Applicative
+import Control.Lens
 import Control.Monad
-import Data.Maybe
 import Control.Parallel.Strategies
+import Data.List
+import Data.Maybe
+import Data.Tuple.HT
+import System.Random
 
 import Game
 import Grid
 
 -- |Generates all sublists of repetition of the given item.
 repeatToN :: Int -> a -> [[a]]
-repeatToN n a = replicate <$> [0..n] ?? a
+repeatToN n a = replicate <$> [0 .. n] ?? a
 
 -- |Generates the moves that will generate all possible dropsites, incl. holds.
 allMoves :: [[Move]]
@@ -24,7 +24,7 @@ allMoves = nub movesWithHolds
     rotations = repeatToN 2 RotateCW ++ repeatToN 2 RotateCCW
     movesWithRotations = (++) <$> rotations <*> sideMoves
     movesWithDrops = (++ [Drop]) <$> movesWithRotations
-    movesWithHolds = movesWithDrops ++ ((Hold:) <$> movesWithDrops)
+    movesWithHolds = movesWithDrops ++ ((Hold :) <$> movesWithDrops)
 
 -- |Apply moves with tracking.
 applyMovesTracked :: [Move] -> Game -> (Game, [Move])
@@ -57,7 +57,7 @@ costedFuturesPar = parMap rseq (\(g, ms) -> (g, ms, cost g))
 -- |Takes a future game and its moves, and looks one step into the future from there.
 -- |Ensures the move-chain is retained.
 extendFutures :: (Game, [Move]) -> [(Game, [Move])]
-extendFutures (game, origMoves) = mapSnd (origMoves++) <$> allFutures game
+extendFutures (game, origMoves) = mapSnd (origMoves ++) <$> allFutures game
 
 -- |Extends the future-list with culling.
 extendWithCulling :: Int -> (Game, [Move]) -> [(Game, [Move])]
@@ -66,10 +66,11 @@ extendWithCulling n future = cullFutures n $ extendFutures future
 -- |Runs multiple iterations of the culling extension.
 -- |Uses the lookahead/culling global arguments.
 extendFuturesN :: (Game, [Move]) -> [(Game, [Move])]
-extendFuturesN = foldr (>=>) return $ replicate lookahead (extendWithCulling culling)
+extendFuturesN =
+  foldr (>=>) return $ replicate lookahead (extendWithCulling culling)
   where
-    lookahead = 3  -- The number of moves into the future to consider
-    culling = 3  -- The top N paths to consider
+    lookahead = 3 -- The number of moves into the future to consider
+    culling = 3 -- The top N paths to consider
 
 -- |Gets the best future and the moves that got us there.
 bestFuture :: Game -> (Game, [Move])
@@ -87,19 +88,17 @@ bestDrop game = takeWhile (/= Drop) moves ++ [Drop]
 -- |Modulate to change policies.
 cost :: Game -> Int
 cost = costA
--- cost = costB
 
+-- cost = costB
 -- |Assign a cost to a game. Plays basically perfect, but one row at a time.
 costA :: Game -> Int
-costA game = 0
-            + 2 ^ lowestEmptyRow (game ^. grid)
-            + 1 * horizontalGaps (game ^. grid)
-            + 2 * verticalGaps (game ^. grid)
+costA game =
+  2 ^ lowestEmptyRow (game ^. grid) + 1 * horizontalGaps (game ^. grid) +
+  2 * verticalGaps (game ^. grid)
 
 -- |Plays aesthetically with gaps, but avoids tunnels.
 costB :: Game -> Int
-costB game = 0
-            + 3 ^ lowestEmptyRow (game ^. grid)
-            + 2 * horizontalGaps (game ^. grid)
-            + 2 ^ verticalGaps (game ^. grid)
-            + 2 ^ numTunnels (game ^. grid)
+costB game =
+  3 ^ lowestEmptyRow (game ^. grid) + 2 * horizontalGaps (game ^. grid) +
+  2 ^ verticalGaps (game ^. grid) +
+  2 ^ numTunnels (game ^. grid)

@@ -7,9 +7,16 @@ import Data.List
 import Data.Maybe
 import qualified Data.Vector as V
 
-data Square = Empty | Full Color deriving (Eq)
-newtype Row = Row (V.Vector Square)
-newtype Grid = Grid (V.Vector Row)
+data Square
+  = Empty
+  | Full Color
+  deriving (Eq)
+
+newtype Row =
+  Row (V.Vector Square)
+
+newtype Grid =
+  Grid (V.Vector Row)
 
 instance Show Square where
   show Empty = show Black ++ "·" ++ "\x1b[0m"
@@ -67,7 +74,8 @@ setX col x (Row r)
 -- |No overlap or bounds checks.
 withPieceUnsafe :: Piece -> Grid -> Grid
 withPieceUnsafe (Piece [] _) g = g
-withPieceUnsafe (Piece (c:cs) col) g = withPieceUnsafe (Piece cs col) (withCoordinateUnsafe col c g)
+withPieceUnsafe (Piece (c:cs) col) g =
+  withPieceUnsafe (Piece cs col) (withCoordinateUnsafe col c g)
 
 -- |Fills a single coordinate on the grid with the given color.
 -- |No overlap or bounds checks.
@@ -77,7 +85,7 @@ withCoordinateUnsafe col (Coordinate (x, y)) (Grid g)
   | y >= V.length g = Grid g
   | otherwise = Grid $ g V.// [(y, newRow)]
   where
-    newRow = setXUnsafe col x (g V.! y) 
+    newRow = setXUnsafe col x (g V.! y)
 
 -- |Sets the x value of the given row with the given color
 -- |No overlap or bounds checks.
@@ -137,7 +145,7 @@ numPopulatedRows (Grid g) = V.length . V.filter rowPopulated $ g
 numTunnels :: Grid -> Int
 numTunnels grid = length . filter (isTunnel grid) $ bottomCoords
   where
-    bottomCoords = [Coordinate (x, y) | x <- [0..9], y <- [0..16]]
+    bottomCoords = [Coordinate (x, y) | x <- [0 .. 9], y <- [0 .. 16]]
 
 -- |True iff this coordinate is the bottom of a tunnel.
 -- |We have to be empty, plus the next two squares up.
@@ -146,12 +154,16 @@ numTunnels grid = length . filter (isTunnel grid) $ bottomCoords
 isTunnel :: Grid -> Coordinate -> Bool
 isTunnel (Grid g) (Coordinate (x, y)) = threeEmpty && surrounded
   where
-    (Row rowBelow) = g V.! (y-1)
+    (Row rowBelow) = g V.! (y - 1)
     (Row row0) = g V.! y
-    (Row row1) = g V.! (y+1)
-    (Row row2) = g V.! (y+2)
+    (Row row1) = g V.! (y + 1)
+    (Row row2) = g V.! (y + 2)
     threeEmpty = all (== Empty) [row0 V.! x, row1 V.! x, row2 V.! x]
     surroundedBelow = (y == 0) || rowBelow V.! x /= Empty
-    surroundedLeft = (x <= 0) || Empty `notElem` [row0 V.! (x-1), row1 V.! (x-1), row2 V.! (x-2)]
-    surroundedRight = (x >= length row0 - 1) || Empty `notElem` [row0 V.! (x+1), row1 V.! (x+1), row2 V.! (x+2)]
+    surroundedLeft =
+      (x <= 0) ||
+      Empty `notElem` [row0 V.! (x - 1), row1 V.! (x - 1), row2 V.! (x - 2)]
+    surroundedRight =
+      (x >= length row0 - 1) ||
+      Empty `notElem` [row0 V.! (x + 1), row1 V.! (x + 1), row2 V.! (x + 2)]
     surrounded = surroundedBelow && surroundedLeft && surroundedRight
