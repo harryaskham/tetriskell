@@ -1,7 +1,7 @@
 module Main where
 
-import Game
 import Agent
+import Game
 
 import Control.Concurrent
 import Control.Monad
@@ -16,10 +16,12 @@ import System.Random
 -- Agent assesses drops with extra moves at the end e.g. L, R or rotation to slot into gaps
 -- Speed linked to level & score
 -- Rotation correction, not blocking, better l-piece rotation
+speedMod = 0.2 -- higher is slower; too low and you hit the decision timeout threshold
 
-speedMod = 0.2  -- higher is slower; too low and you hit the decision timeout threshold
 agentMoveDelay = round $ speedMod * 25000
+
 fps60Delay = 16666
+
 stepDelay = round $ speedMod * 1000000
 
 -- |Clear the terminal screen.
@@ -47,12 +49,12 @@ moveLoop gameMv movesMv = do
 gameLoop :: MVar Game -> IO ()
 gameLoop gameMv = do
   game <- takeMVar gameMv
-  if isComplete game then
-    return ()
-  else do
-    putMVar gameMv $ step game
-    threadDelay stepDelay
-    gameLoop gameMv
+  if isComplete game
+    then return ()
+    else do
+      putMVar gameMv $ step game
+      threadDelay stepDelay
+      gameLoop gameMv
 
 -- |Build up a list of input moves given by getChar.
 getMoves :: MVar [Move] -> IO ()
@@ -60,7 +62,7 @@ getMoves movesMv = do
   hSetBuffering stdin NoBuffering
   c <- getHiddenChar
   case toMove c of
-    Just c -> modifyMVar_ movesMv (\is -> return (c:is))
+    Just c -> modifyMVar_ movesMv (\is -> return (c : is))
     Nothing -> return ()
   getMoves movesMv
 
@@ -68,7 +70,7 @@ getMoves movesMv = do
 executeAgentMoves :: [Move] -> MVar [Move] -> IO ()
 executeAgentMoves [] _ = return ()
 executeAgentMoves (m:ms) movesMv = do
-  modifyMVar_ movesMv (return . (m:))
+  modifyMVar_ movesMv (return . (m :))
   threadDelay agentMoveDelay
   executeAgentMoves ms movesMv
 
