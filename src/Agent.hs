@@ -35,7 +35,7 @@ applyMovesTracked moves game = (applyMoves moves game, moves)
 allFutures :: Game -> [(Game, [Move])]
 allFutures game = steppedGames
   where
-    allFutureGames = applyMovesTracked <$> allMoves <*> pure game
+    allFutureGames = applyMovesTracked <$> allMoves ?? game
     steppedGames = mapFst step <$> allFutureGames
 
 -- |Cull futures by taking only the top N
