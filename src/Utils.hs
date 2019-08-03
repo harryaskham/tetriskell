@@ -15,3 +15,11 @@ fst2of3 (a, b, c) = (a, b)
 -- |Compare tuples based on their third entry
 compareThd :: Ord c => (a, b, c) -> (a, b, c) -> Ordering
 compareThd (_, _, x1) (_, _, x2) = compare x1 x2
+
+-- |Takes until a predicate is met, including the thing that caused us to stop.
+takeWhileInclusive :: (a -> Bool) -> [a] -> [a]
+takeWhileInclusive p [] = []
+takeWhileInclusive p xs = go p xs []
+  where
+    go p [] acc = acc
+    go p (x:xs) acc = if p x then go p xs (x:acc) else reverse (x:acc)

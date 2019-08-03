@@ -87,12 +87,15 @@ bestFuture game = minimumBy compareCost $ extendFuturesN (game, mempty)
   where
     compareCost (g1, _) (g2, _) = compare (cost g1) (cost g2)
 
+-- |Gets the best move sequence we know about so far.
+-- |Note that this might be invalidated by extra lookahead so we often cull to Drop.
+bestMoves :: Game -> [Move]
+bestMoves = snd . bestFuture
+
 -- |Gets the best set of moves up to the first Drop event.
 -- |This means that each move has the fullest context.
 bestDrop :: Game -> [Move]
-bestDrop game = takeWhile (/= Drop) moves ++ [Drop]
-  where
-    moves = snd $ bestFuture game
+bestDrop = takeWhileInclusive (/= Drop) . bestMoves
 
 -- |Modulate to change policies.
 cost :: Game -> Cost
