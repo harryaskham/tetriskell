@@ -11,10 +11,13 @@ import System.Random
 
 import Game
 import Grid
+import Utils
 
--- |Generates all sublists of repetition of the given item.
-repeatToN :: Int -> a -> [[a]]
-repeatToN n a = replicate <$> [0 .. n] ?? a
+-- |Type alias representing a given future game and the moves to get there.
+type Future = (Game, [Move])
+
+-- |A future, with its cost included.
+type CostedFuture = (Game, [Move], Int)
 
 -- |Generates the moves that will generate all possible dropsites, incl. holds.
 allMoves :: [[Move]]
@@ -27,45 +30,49 @@ allMoves = nub movesWithHolds
     movesWithHolds = movesWithDrops ++ ((Hold :) <$> movesWithDrops)
 
 -- |Apply moves with tracking.
-applyMovesTracked :: [Move] -> Game -> (Game, [Move])
+applyMovesTracked :: [Move] -> Game -> Future
 applyMovesTracked moves game = (applyMoves moves game, moves)
 
 -- |Generate all games from here that have every combo of left, right, rotation and drop
 -- |Keeps track of the moves that generated it.
-allFutures :: Game -> [(Game, [Move])]
+allFutures :: Game -> [Future]
 allFutures game = steppedGames
   where
     allFutureGames = applyMovesTracked <$> allMoves ?? game
     steppedGames = mapFst step <$> allFutureGames
 
 -- |Cull futures by taking only the top N
-cullFutures :: Int -> [(Game, [Move])] -> [(Game, [Move])]
-cullFutures n futures = (\(g, ms, _) -> (g, ms)) <$> culledCostedFutures
+cullFutures :: Int -> [Future] -> [Future]
+cullFutures n futures = fst2of3 <$> culledCostedFutures
   where
-    sortByCost = sortBy (\(_, _, c1) (_, _, c2) -> compare c1 c2)
+    sortByCost = sortBy compareThd
     sortedFutures = sortByCost $ costedFuturesPar futures
     culledCostedFutures = take n sortedFutures
 
--- |Calculate the cost of each future.
-costedFutures :: [(Game, [Move])] -> [(Game, [Move], Int)]
-costedFutures = map (\(g, ms) -> (g, ms, cost g))
+-- |Augments a future tuple with its cost
+addCost :: Future -> CostedFuture
+addCost (g, ms) = (g, ms, cost g)
 
 -- |Calculate the cost of each future.
-costedFuturesPar :: [(Game, [Move])] -> [(Game, [Move], Int)]
-costedFuturesPar = parMap rseq (\(g, ms) -> (g, ms, cost g))
+costedFutures :: [Future] -> [CostedFuture]
+costedFutures = fmap addCost
+
+-- |Calculate the cost of each future.
+costedFuturesPar :: [Future] -> [CostedFuture]
+costedFuturesPar = parMap rseq addCost
 
 -- |Takes a future game and its moves, and looks one step into the future from there.
 -- |Ensures the move-chain is retained.
-extendFutures :: (Game, [Move]) -> [(Game, [Move])]
+extendFutures :: Future -> [Future]
 extendFutures (game, origMoves) = mapSnd (origMoves ++) <$> allFutures game
 
 -- |Extends the future-list with culling.
-extendWithCulling :: Int -> (Game, [Move]) -> [(Game, [Move])]
+extendWithCulling :: Int -> Future -> [Future]
 extendWithCulling n future = cullFutures n $ extendFutures future
 
 -- |Runs multiple iterations of the culling extension.
 -- |Uses the lookahead/culling global arguments.
-extendFuturesN :: (Game, [Move]) -> [(Game, [Move])]
+extendFuturesN :: Future -> [Future]
 extendFuturesN =
   foldr (>=>) return $ replicate lookahead (extendWithCulling culling)
   where
@@ -73,7 +80,7 @@ extendFuturesN =
     culling = 3 -- The top N paths to consider
 
 -- |Gets the best future and the moves that got us there.
-bestFuture :: Game -> (Game, [Move])
+bestFuture :: Game -> Future
 bestFuture game = minimumBy compareCost $ extendFuturesN (game, mempty)
   where
     compareCost (g1, _) (g2, _) = compare (cost g1) (cost g2)

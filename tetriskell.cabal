@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 749913d323ff1d84cc47d4e15d7378227e791f75e6997e69427715bbd9643fa9
+-- hash: ea10464640f7f4257e7d1e550a1b3d25a739dbd20e0570c4f7289c8a136f5417
 
 name:           tetriskell
 version:        0.1.0.0
@@ -30,6 +30,7 @@ library
       Game
       Grid
       Piece
+      Utils
   other-modules:
       Paths_tetriskell
   hs-source-dirs:
