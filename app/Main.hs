@@ -115,6 +115,7 @@ main = do
   gameMv <- newMVar $ gameWithSeed seed
   movesMv <- newMVar []
   forkIO $ printLoop gameMv
+  -- TODO: Predicate on a flag
   -- forkIO $ moveLoop gameMv movesMv
   -- forkIO $ getMoves movesMv
   forkIO $ getAgentMoves gameMv movesMv

@@ -16,8 +16,10 @@ import Utils
 -- |Type alias representing a given future game and the moves to get there.
 type Future = (Game, [Move])
 
+type Cost = Int
+
 -- |A future, with its cost included.
-type CostedFuture = (Game, [Move], Int)
+type CostedFuture = (Game, [Move], Cost)
 
 -- |Generates the moves that will generate all possible dropsites, incl. holds.
 allMoves :: [[Move]]
@@ -64,11 +66,11 @@ costedFuturesPar = parMap rseq addCost
 -- |Takes a future game and its moves, and looks one step into the future from there.
 -- |Ensures the move-chain is retained.
 extendFutures :: Future -> [Future]
-extendFutures (game, origMoves) = mapSnd (origMoves ++) <$> allFutures game
+extendFutures (game, origMoves) = (origMoves ++) <$$> allFutures game
 
 -- |Extends the future-list with culling.
 extendWithCulling :: Int -> Future -> [Future]
-extendWithCulling n future = cullFutures n $ extendFutures future
+extendWithCulling n = cullFutures n . extendFutures
 
 -- |Runs multiple iterations of the culling extension.
 -- |Uses the lookahead/culling global arguments.
@@ -93,18 +95,18 @@ bestDrop game = takeWhile (/= Drop) moves ++ [Drop]
     moves = snd $ bestFuture game
 
 -- |Modulate to change policies.
-cost :: Game -> Int
+cost :: Game -> Cost
 cost = costA
 
 -- cost = costB
 -- |Assign a cost to a game. Plays basically perfect, but one row at a time.
-costA :: Game -> Int
+costA :: Game -> Cost
 costA game =
   2 ^ lowestEmptyRow (game ^. grid) + 1 * horizontalGaps (game ^. grid) +
   2 * verticalGaps (game ^. grid)
 
 -- |Plays aesthetically with gaps, but avoids tunnels.
-costB :: Game -> Int
+costB :: Game -> Cost
 costB game =
   3 ^ lowestEmptyRow (game ^. grid) + 2 * horizontalGaps (game ^. grid) +
   2 ^ verticalGaps (game ^. grid) +

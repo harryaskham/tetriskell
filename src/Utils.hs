@@ -1,5 +1,9 @@
 module Utils where
 
+infixl 5 <$$>
+(<$$>) :: (Functor f, Functor g) => (a -> b) -> f (g a) -> f (g b)
+(<$$>) = fmap . fmap
+
 -- |Generates all sublists of repetition of the given item.
 repeatToN :: Int -> a -> [[a]]
 repeatToN n a = replicate <$> [0 .. n] <*> pure a
