@@ -38,10 +38,7 @@ applyMovesTracked moves game = (applyMoves moves game, moves)
 -- |Generate all games from here that have every combo of left, right, rotation and drop
 -- |Keeps track of the moves that generated it.
 allFutures :: Game -> [Future]
-allFutures game = steppedGames
-  where
-    allFutureGames = applyMovesTracked <$> allMoves ?? game
-    steppedGames = mapFst step <$> allFutureGames
+allFutures game = mapFst step <$> (applyMovesTracked <$> allMoves <*> pure game)
 
 -- |Cull futures by taking only the top N
 cullFutures :: Int -> [Future] -> [Future]
