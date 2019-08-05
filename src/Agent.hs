@@ -35,10 +35,14 @@ allMoves = nub movesWithHolds
 applyMovesTracked :: [Move] -> Game -> Future
 applyMovesTracked moves game = (applyMoves moves game, moves)
 
+-- |All the ways of taking a game into a future
+applyAllMoves :: [Game -> Future]
+applyAllMoves = applyMovesTracked <$> allMoves
+
 -- |Generate all games from here that have every combo of left, right, rotation and drop
 -- |Keeps track of the moves that generated it.
 allFutures :: Game -> [Future]
-allFutures game = mapFst step <$> (applyMovesTracked <$> allMoves <*> pure game)
+allFutures = ap applyAllMoves . pure
 
 -- |Cull futures by taking only the top N
 cullFutures :: Int -> [Future] -> [Future]
